@@ -2,7 +2,7 @@ import { readFile, stat } from 'fs/promises'
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'http'
 import { extname, resolve, sep } from 'path'
 import { AGENT_ACTION_PATH, AGENT_STATUS_PATH } from '@shared/agent'
-import { authorize, type AuthOptions } from './auth'
+import { authorize, describeRefusal, type AuthOptions } from './auth'
 import type { AgentService } from './service'
 
 export interface AgentServerOptions {
@@ -10,6 +10,8 @@ export interface AgentServerOptions {
   auth: AuthOptions
   /** Folder of the built PWA; without it only the API answers. */
   staticDir?: string
+  /** Told why each request was refused (one line, no secret); the entry point writes it to the journal. */
+  onRefused?: (line: string) => void
 }
 
 /** An action body is two short strings: anything bigger is not ours. */
@@ -146,6 +148,12 @@ async function serveStatic(res: ServerResponse, root: string, rawPath: string): 
   }
 }
 
+/** The path of a request URL for the journal: no query, printable characters only. */
+function safePath(url: string | undefined): string {
+  const path = (url ?? '/').split('?')[0]
+  return /^\/[A-Za-z0-9._~/-]{0,100}$/.test(path) ? path : '/?'
+}
+
 /**
  * The agent's whole HTTP surface: two API routes and the built page. Everything is checked by
  * `authorize` first, so an unknown caller learns nothing, not even which routes exist.
@@ -158,6 +166,9 @@ export function createAgentServer(options: AgentServerOptions): Server {
     const verdict = authorize({ method, headers: req.headers }, options.auth)
     if (!verdict.ok) {
       req.resume()
+      options.onRefused?.(
+        describeRefusal({ method, headers: req.headers }, safePath(req.url), options.auth)
+      )
       return sendError(res, verdict.status, 'Accès refusé.')
     }
 

@@ -45,6 +45,38 @@ function isOwnOrigin(
   }
 }
 
+/** A header value that is safe to put in a log line: short, printable, one line. */
+function loggable(value: string | undefined): string {
+  if (value === undefined) return '-'
+  return /^[a-z0-9-]{1,20}$/.test(value) ? value : '?'
+}
+
+/**
+ * One line telling why a request was refused, for the journal on bento. It names the headers
+ * that decide the verdict, never the login or the origin themselves.
+ */
+export function describeRefusal(request: AuthRequest, path: string, options: AuthOptions): string {
+  const { headers } = request
+  const login = single(headers, 'tailscale-user-login')
+  const origin = single(headers, 'origin')
+  const loginState =
+    login === undefined ? 'missing' : login === options.allowedLogin ? 'ok' : 'mismatch'
+  const originState =
+    origin === undefined
+      ? 'absent'
+      : isOwnOrigin(origin, single(headers, 'host'), options.allowedOrigin)
+        ? 'match'
+        : 'mismatch'
+  const fields = [
+    `login=${loginState}`,
+    `site=${loggable(single(headers, 'sec-fetch-site'))}`,
+    `mode=${loggable(single(headers, 'sec-fetch-mode'))}`,
+    `dest=${loggable(single(headers, 'sec-fetch-dest'))}`,
+    `origin=${originState}`
+  ]
+  return `refused ${loggable(request.method.toLowerCase()).toUpperCase()} ${path} ${fields.join(' ')}`
+}
+
 /**
  * Who may talk to the agent. It listens on loopback only, so the `Tailscale-User-Login` header can
  * only come from `tailscale serve`. Reads need that login; an action also has to prove it comes

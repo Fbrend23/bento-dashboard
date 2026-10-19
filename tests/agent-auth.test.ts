@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { authorize, type AuthRequest } from '../src/agent/auth'
+import { authorize, describeRefusal, type AuthRequest } from '../src/agent/auth'
 
 const LOGIN = 'owner@example.com'
 const ORIGIN = 'https://bento.example.ts.net'
@@ -191,5 +191,37 @@ describe('authorize: actions (POST)', () => {
         options
       )
     ).toEqual({ ok: false, status: 403 })
+  })
+})
+
+describe('describeRefusal', () => {
+  it('says what the request carried, without ever repeating the login or the origin', () => {
+    const request = get({
+      'tailscale-user-login': 'someone@example.com',
+      host: 'bento.example.ts.net',
+      origin: 'https://evil.example',
+      'sec-fetch-site': 'cross-site',
+      'sec-fetch-mode': 'same-origin',
+      'sec-fetch-dest': 'document'
+    })
+    const line = describeRefusal(request, '/api/status', options)
+    expect(line).toBe(
+      'refused GET /api/status login=mismatch site=cross-site mode=same-origin dest=document origin=mismatch'
+    )
+    expect(line).not.toContain('someone@example.com')
+    expect(line).not.toContain('evil.example')
+  })
+
+  it('tells a missing login from a wrong one, and a missing header from a value', () => {
+    const request: AuthRequest = { method: 'GET', headers: {} }
+    expect(describeRefusal(request, '/', options)).toBe(
+      'refused GET / login=missing site=- mode=- dest=- origin=absent'
+    )
+    expect(describeRefusal(get(), '/', options)).toContain('login=ok')
+  })
+
+  it('keeps unexpected header values from forging log lines', () => {
+    const request = get({ 'sec-fetch-site': 'x\nrefused GET /fake' })
+    expect(describeRefusal(request, '/', options)).not.toContain('\n')
   })
 })

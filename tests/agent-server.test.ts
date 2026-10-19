@@ -33,6 +33,7 @@ let service: AgentService
 let staticDir: string
 let close: () => Promise<void>
 let base: string
+let refusals: string[]
 
 beforeEach(async () => {
   service = {
@@ -46,10 +47,12 @@ beforeEach(async () => {
   writeFileSync(join(staticDir, 'assets', 'style.css'), 'body{}')
   writeFileSync(join(tmpdir(), 'bento-agent-secret.txt'), 'secret')
 
+  refusals = []
   const server = createAgentServer({
     service,
     auth: { allowedLogin: LOGIN },
-    staticDir
+    staticDir,
+    onRefused: (line) => refusals.push(line)
   })
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
@@ -101,6 +104,14 @@ async function request(
 }
 
 describe('access', () => {
+  it('reports each refusal as one line, without the login', async () => {
+    await request('GET', '/api/status?x=1', { 'tailscale-user-login': 'other@example.com' })
+    await request('GET', '/', authed)
+    expect(refusals).toEqual([
+      'refused GET /api/status login=mismatch site=- mode=- dest=- origin=absent'
+    ])
+  })
+
   it('answers 403 without the Tailscale login, on every route', async () => {
     for (const [method, path] of [
       ['GET', '/api/status'],

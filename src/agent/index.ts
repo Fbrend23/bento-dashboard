@@ -24,7 +24,8 @@ async function main(): Promise<void> {
   const server = createAgentServer({
     service,
     auth: { allowedLogin: config.allowedLogin, allowedOrigin: config.allowedOrigin },
-    staticDir: process.env.BENTO_AGENT_STATIC ?? join(__dirname, 'public')
+    staticDir: process.env.BENTO_AGENT_STATIC ?? join(__dirname, 'public'),
+    onRefused: (line) => console.warn(line)
   })
 
   server.listen(config.port, LOOPBACK, () => {
