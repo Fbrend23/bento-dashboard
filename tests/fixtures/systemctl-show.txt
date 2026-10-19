@@ -1,0 +1,5 @@
+Id=tailscaled.service
+ActiveState=active
+SubState=running
+ActiveEnterTimestamp=Mon 2026-10-12 04:01:06 CEST
+ActiveEnterTimestampMonotonic=8109844

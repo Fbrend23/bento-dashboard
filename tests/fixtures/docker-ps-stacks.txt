@@ -1,0 +1,26 @@
+vpn-watcher|running||media|Up 2 days
+solver|running||media|Up 4 days (healthy)
+cleaner|running||media|Up 2 days (healthy)
+game_container|running|0.0.0.0:8123->8123/tcp, [::]:8123->8123/tcp, 8000/tcp, 19132/tcp, 0.0.0.0:8443->8443/tcp, [::]:8443->8443/tcp, 25500-25564/tcp, 25567-25600/tcp, 0.0.0.0:25565-25566->25565-25566/tcp, [::]:25565-25566->25565-25566/tcp, 0.0.0.0:24454->24454/udp, [::]:24454->24454/udp|game|Up 4 days
+speaker|exited||server|Exited (137) 2 months ago
+stream|exited||server|Exited (0) 2 months ago
+movies|running||media|Up 4 days (healthy)
+series|running||media|Up 2 days (healthy)
+downloader|running||media|Up 4 days (healthy)
+indexer|running||media|Up 4 days (healthy)
+vpn|running|0.0.0.0:6881->6881/tcp, [::]:6881->6881/tcp, 1080/tcp, 0.0.0.0:7878->7878/tcp, [::]:7878->7878/tcp, 0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp, 8000/tcp, 8388/tcp, 0.0.0.0:8191->8191/tcp, [::]:8191->8191/tcp, 0.0.0.0:8989->8989/tcp, [::]:8989->8989/tcp, 8888/tcp, 0.0.0.0:9696->9696/tcp, 0.0.0.0:6881->6881/udp, [::]:9696->9696/tcp, [::]:6881->6881/udp, 8388/udp|media|Up 4 days (healthy)
+healer|running||media|Up 4 days (healthy)
+jellyfin|running|0.0.0.0:8096->8096/tcp, [::]:8096->8096/tcp, 8920/tcp|media|Up 19 minutes
+homepage|running|0.0.0.0:7575->7575/tcp, [::]:7575->7575/tcp|media|Up 4 days (unhealthy)
+subtitles|running|0.0.0.0:6767->6767/tcp, [::]:6767->6767/tcp|media|Up 4 days
+requests|running|0.0.0.0:5055->5055/tcp, [::]:5055->5055/tcp|media|Up 4 days
+56d385c967ac_camera|exited||server|Exited (137) 2 months ago
+faces-fe|exited||server|Exited (0) 2 months ago
+faces-admin|exited||server|Exited (137) 2 months ago
+faces-api|exited||server|Exited (137) 2 months ago
+broker|exited||server|Exited (0) 2 months ago
+faces-core|exited||server|Exited (0) 2 months ago
+matcher|exited||server|Exited (143) 2 months ago
+faces-postgres-db|exited||server|Exited (0) 2 months ago
+docker-ui|running|8000/tcp, 9000/tcp, 0.0.0.0:9443->9443/tcp, [::]:9443->9443/tcp||Up 4 days
+proxy-app-1|running|0.0.0.0:80-81->80-81/tcp, [::]:80-81->80-81/tcp, 0.0.0.0:443->443/tcp, [::]:443->443/tcp|proxy|Up 2 hours

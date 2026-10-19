@@ -1,0 +1,10 @@
+acpitz|39000
+SEN1|50
+SEN2|100050
+INT3400 Thermal|20000
+SEN3|50
+SEN4|100050
+pch_skylake|35500
+B0D4|53000
+iwlwifi_1|43000
+x86_pkg_temp|55000

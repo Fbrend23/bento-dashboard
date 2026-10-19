@@ -1,0 +1,200 @@
+2026-10-16T02:11:57+02:00 bento tailscaled[1717]: magicsock: endpoints changed: 203.0.113.10:41641 (stun), 172.17.0.1:41641 (local), 172.18.0.1:41641 (local), 172.19.0.1:41641 (local), 172.20.0.1:41641 (local), 172.21.0.1:41641 (local), 192.168.1.100:41641 (local), 172.23.0.1:41641 (local)
+2026-10-16T02:11:57+02:00 bento tailscaled[1717]: LinkChange: major, rebinding: old: interfaces.State{defaultRoute=enx001122334455 ifs={br-2b3718033c65:[172.21.0.1/16 llu6] br-38b6d3915478:[172.20.0.1/16 llu6] br-503733f67b97:[172.19.0.1/16] br-9718c5543026:[172.18.0.1/16 llu6] br-dc52ef536642:[172.23.0.1/16] docker0:[172.17.0.1/16 llu6] enx001122334455:[192.168.1.100/24 llu6] tailscale0:[100.64.0.2/32 fd7a:115c:a1e0::1/128 llu6] wlp2s0:[192.168.1.72/24]} v4=true v6=false} new: interfaces.State{defaultRoute=enx001122334455 ifs={br-2b3718033c65:[172.21.0.1/16 llu6] br-38b6d3915478:[172.20.0.1/16 llu6] br-503733f67b97:[172.19.0.1/16] br-9718c5543026:[172.18.0.1/16 llu6] br-dc52ef536642:[172.23.0.1/16] docker0:[172.17.0.1/16 llu6] enx001122334455:[192.168.1.100/24 llu6] tailscale0:[100.64.0.2/32 fd7a:115c:a1e0::1/128 llu6]} v4=true v6=false} diff: ips wlp2s0: [192.168.1.72/24]->[] rebind-reason=[ips-changed]
+2026-10-16T02:11:57+02:00 bento tailscaled[1717]: dns: Set: {DefaultResolvers:[] Routes:{tailnet-example.ts.net.:[] ts.net.:[199.247.155.53 2620:111:8007::53]}+65arpa SearchDomains:[tailnet-example.ts.net.] Hosts:8}
+2026-10-16T02:11:57+02:00 bento tailscaled[1717]: dns: Resolvercfg: {Routes:{ts.net.:[199.247.155.53 2620:111:8007::53]} Hosts:8 LocalDomains:[tailnet-example.ts.net.]+65arpa}
+2026-10-16T02:11:57+02:00 bento tailscaled[1717]: dns: OScfg: {Nameservers:[100.100.100.100 fd7a:115c:a1e0::53] SearchDomains:[tailnet-example.ts.net.] MatchDomains:[tailnet-example.ts.net. ts.net.]+65arpa}
+2026-10-16T02:11:57+02:00 bento tailscaled[1717]: wgengine: set DNS config again after major link change
+2026-10-16T02:11:57+02:00 bento tailscaled[1717]: router: portUpdate(port=41641, network=udp6)
+2026-10-16T02:11:57+02:00 bento tailscaled[1717]: router: portUpdate(port=41641, network=udp4)
+2026-10-16T02:11:57+02:00 bento tailscaled[1717]: Rebind; defIf="enx001122334455", ips=[192.168.1.100/24 fe80::1/64]
+2026-10-16T02:11:57+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr48h0m0s,wr34h35m0s
+2026-10-16T02:11:57+02:00 bento tailscaled[1717]: post-rebind ping of DERP region 4 okay
+2026-10-16T02:13:00+02:00 bento tailscaled[1717]: monitor: RTM_DELROUTE: src=, dst=ff00::/8, gw=, outif=3, table=255
+2026-10-16T02:13:00+02:00 bento tailscaled[1717]: monitor: RTM_NEWROUTE: src=192.168.1.72/0, dst=192.168.1.72/32, gw=, outif=3, table=255
+2026-10-16T02:13:00+02:00 bento tailscaled[1717]: monitor: RTM_NEWROUTE: src=192.168.1.72/0, dst=192.168.1.255/32, gw=, outif=3, table=255
+2026-10-16T02:13:00+02:00 bento tailscaled[1717]: monitor: RTM_NEWROUTE: src=192.168.1.72/0, dst=192.168.1.0/24, gw=, outif=3, table=254
+2026-10-16T02:13:00+02:00 bento tailscaled[1717]: monitor: RTM_NEWROUTE: src=192.168.1.72/0, dst=, gw=192.168.1.1, outif=3, table=254
+2026-10-16T02:13:00+02:00 bento tailscaled[1717]: magicsock: endpoints changed: 203.0.113.10:41641 (stun), 172.17.0.1:41641 (local), 172.18.0.1:41641 (local), 172.19.0.1:41641 (local), 172.20.0.1:41641 (local), 172.21.0.1:41641 (local), 192.168.1.72:41641 (local), 192.168.1.100:41641 (local), 172.23.0.1:41641 (local)
+2026-10-16T02:13:01+02:00 bento tailscaled[1717]: monitor: RTM_NEWROUTE: src=192.168.1.72/0, dst=, gw=192.168.1.1, outif=3, table=254
+2026-10-16T02:13:01+02:00 bento tailscaled[1717]: monitor: RTM_DELROUTE: src=192.168.1.72/0, dst=, gw=192.168.1.1, outif=3, table=254
+2026-10-16T02:13:01+02:00 bento tailscaled[1717]: LinkChange: major, rebinding: old: interfaces.State{defaultRoute=enx001122334455 ifs={br-2b3718033c65:[172.21.0.1/16 llu6] br-38b6d3915478:[172.20.0.1/16 llu6] br-503733f67b97:[172.19.0.1/16] br-9718c5543026:[172.18.0.1/16 llu6] br-dc52ef536642:[172.23.0.1/16] docker0:[172.17.0.1/16 llu6] enx001122334455:[192.168.1.100/24 llu6] tailscale0:[100.64.0.2/32 fd7a:115c:a1e0::1/128 llu6]} v4=true v6=false} new: interfaces.State{defaultRoute=enx001122334455 ifs={br-2b3718033c65:[172.21.0.1/16 llu6] br-38b6d3915478:[172.20.0.1/16 llu6] br-503733f67b97:[172.19.0.1/16] br-9718c5543026:[172.18.0.1/16 llu6] br-dc52ef536642:[172.23.0.1/16] docker0:[172.17.0.1/16 llu6] enx001122334455:[192.168.1.100/24 llu6] tailscale0:[100.64.0.2/32 fd7a:115c:a1e0::1/128 llu6] wlp2s0:[192.168.1.72/24 llu6]} v4=true v6=false} diff: ips wlp2s0: []->[192.168.1.72/24 fe80::cdd8:b4ee:a926:49d7/64] rebind-reason=[ips-changed]
+2026-10-16T02:13:01+02:00 bento tailscaled[1717]: dns: Set: {DefaultResolvers:[] Routes:{tailnet-example.ts.net.:[] ts.net.:[199.247.155.53 2620:111:8007::53]}+65arpa SearchDomains:[tailnet-example.ts.net.] Hosts:8}
+2026-10-16T02:13:01+02:00 bento tailscaled[1717]: dns: Resolvercfg: {Routes:{ts.net.:[199.247.155.53 2620:111:8007::53]} Hosts:8 LocalDomains:[tailnet-example.ts.net.]+65arpa}
+2026-10-16T02:13:01+02:00 bento tailscaled[1717]: dns: OScfg: {Nameservers:[100.100.100.100 fd7a:115c:a1e0::53] SearchDomains:[tailnet-example.ts.net.] MatchDomains:[tailnet-example.ts.net. ts.net.]+65arpa}
+2026-10-16T02:13:01+02:00 bento tailscaled[1717]: wgengine: set DNS config again after major link change
+2026-10-16T02:13:01+02:00 bento tailscaled[1717]: router: portUpdate(port=41641, network=udp6)
+2026-10-16T02:13:01+02:00 bento tailscaled[1717]: Rebind; defIf="enx001122334455", ips=[192.168.1.100/24 fe80::1/64]
+2026-10-16T02:13:01+02:00 bento tailscaled[1717]: router: portUpdate(port=41641, network=udp4)
+2026-10-16T02:13:01+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr48h1m0s,wr34h36m0s
+2026-10-16T02:13:01+02:00 bento tailscaled[1717]: post-rebind ping of DERP region 4 okay
+2026-10-16T02:15:00+02:00 bento tailscaled[1717]: monitor: RTM_NEWROUTE: src=, dst=, gw=192.168.1.1, outif=2, table=254
+2026-10-16T02:15:00+02:00 bento tailscaled[1717]: monitor: RTM_DELROUTE: src=, dst=, gw=192.168.1.1, outif=2, table=254
+2026-10-16T02:15:00+02:00 bento tailscaled[1717]: tsdial: closing system connection 192.168.1.100:53152->192.168.2.104:443 due to link change
+2026-10-16T02:15:00+02:00 bento tailscaled[1717]: LinkChange: major, rebinding: old: interfaces.State{defaultRoute=enx001122334455 ifs={br-2b3718033c65:[172.21.0.1/16 llu6] br-38b6d3915478:[172.20.0.1/16 llu6] br-503733f67b97:[172.19.0.1/16] br-9718c5543026:[172.18.0.1/16 llu6] br-dc52ef536642:[172.23.0.1/16] docker0:[172.17.0.1/16 llu6] enx001122334455:[192.168.1.100/24 llu6] tailscale0:[100.64.0.2/32 fd7a:115c:a1e0::1/128 llu6] wlp2s0:[192.168.1.72/24 llu6]} v4=true v6=false} new: interfaces.State{defaultRoute=wlp2s0 ifs={br-2b3718033c65:[172.21.0.1/16 llu6] br-38b6d3915478:[172.20.0.1/16 llu6] br-503733f67b97:[172.19.0.1/16] br-9718c5543026:[172.18.0.1/16 llu6] br-dc52ef536642:[172.23.0.1/16] docker0:[172.17.0.1/16 llu6] enx001122334455:[192.168.1.100/24 llu6] tailscale0:[100.64.0.2/32 fd7a:115c:a1e0::1/128 llu6] wlp2s0:[192.168.1.72/24 llu6]} v4=true v6=false} diff: DefaultRoute: "enx001122334455"->"wlp2s0" rebind-reason=[default-if-changed]
+2026-10-16T02:15:00+02:00 bento tailscaled[1717]: dns: Set: {DefaultResolvers:[] Routes:{tailnet-example.ts.net.:[] ts.net.:[199.247.155.53 2620:111:8007::53]}+65arpa SearchDomains:[tailnet-example.ts.net.] Hosts:8}
+2026-10-16T02:15:00+02:00 bento tailscaled[1717]: dns: Resolvercfg: {Routes:{ts.net.:[199.247.155.53 2620:111:8007::53]} Hosts:8 LocalDomains:[tailnet-example.ts.net.]+65arpa}
+2026-10-16T02:15:00+02:00 bento tailscaled[1717]: dns: OScfg: {Nameservers:[100.100.100.100 fd7a:115c:a1e0::53] SearchDomains:[tailnet-example.ts.net.] MatchDomains:[tailnet-example.ts.net. ts.net.]+65arpa}
+2026-10-16T02:15:00+02:00 bento tailscaled[1717]: Received error: PollNetMap: read tcp 192.168.1.100:53152->192.168.2.104:443: use of closed network connection
+2026-10-16T02:15:00+02:00 bento tailscaled[1717]: wgengine: set DNS config again after major link change
+2026-10-16T02:15:00+02:00 bento tailscaled[1717]: router: portUpdate(port=41641, network=udp6)
+2026-10-16T02:15:00+02:00 bento tailscaled[1717]: Rebind; defIf="wlp2s0", ips=[192.168.1.72/24 fe80::cdd8:b4ee:a926:49d7/64]
+2026-10-16T02:15:00+02:00 bento tailscaled[1717]: router: portUpdate(port=41641, network=udp4)
+2026-10-16T02:15:00+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr48h3m0s,wr34h38m0s
+2026-10-16T02:15:00+02:00 bento tailscaled[1717]: monitor: gateway and self IP changed: gw=192.168.1.1 self=192.168.1.72
+2026-10-16T02:15:00+02:00 bento tailscaled[1717]: post-rebind ping of DERP region 4 okay
+2026-10-16T02:15:00+02:00 bento tailscaled[1717]: monitor: RTM_NEWROUTE: src=, dst=, gw=192.168.1.1, outif=2, table=254
+2026-10-16T02:15:00+02:00 bento tailscaled[1717]: monitor: RTM_DELROUTE: src=, dst=, gw=192.168.1.1, outif=2, table=254
+2026-10-16T02:15:01+02:00 bento tailscaled[1717]: control: controlhttp: forcing port 443 dial due to recent noise dial
+2026-10-16T02:15:01+02:00 bento tailscaled[1717]: control: netmap: got new dial plan from control
+2026-10-16T02:15:01+02:00 bento tailscaled[1717]: netmap: suggested exit node:  ()
+2026-10-16T02:15:01+02:00 bento tailscaled[1717]: tsdial: closing system connection 192.168.1.100:33112->192.168.2.101:443 due to link change
+2026-10-16T02:15:01+02:00 bento tailscaled[1717]: LinkChange: major, rebinding: old: interfaces.State{defaultRoute=wlp2s0 ifs={br-2b3718033c65:[172.21.0.1/16 llu6] br-38b6d3915478:[172.20.0.1/16 llu6] br-503733f67b97:[172.19.0.1/16] br-9718c5543026:[172.18.0.1/16 llu6] br-dc52ef536642:[172.23.0.1/16] docker0:[172.17.0.1/16 llu6] enx001122334455:[192.168.1.100/24 llu6] tailscale0:[100.64.0.2/32 fd7a:115c:a1e0::1/128 llu6] wlp2s0:[192.168.1.72/24 llu6]} v4=true v6=false} new: interfaces.State{defaultRoute=enx001122334455 ifs={br-2b3718033c65:[172.21.0.1/16 llu6] br-38b6d3915478:[172.20.0.1/16 llu6] br-503733f67b97:[172.19.0.1/16] br-9718c5543026:[172.18.0.1/16 llu6] br-dc52ef536642:[172.23.0.1/16] docker0:[172.17.0.1/16 llu6] enx001122334455:[192.168.1.100/24 llu6] tailscale0:[100.64.0.2/32 fd7a:115c:a1e0::1/128 llu6] wlp2s0:[192.168.1.72/24 llu6]} v4=true v6=false} diff: DefaultRoute: "wlp2s0"->"enx001122334455" rebind-reason=[default-if-changed]
+2026-10-16T02:15:01+02:00 bento tailscaled[1717]: dns: Set: {DefaultResolvers:[] Routes:{tailnet-example.ts.net.:[] ts.net.:[199.247.155.53 2620:111:8007::53]}+65arpa SearchDomains:[tailnet-example.ts.net.] Hosts:8}
+2026-10-16T02:15:01+02:00 bento tailscaled[1717]: dns: Resolvercfg: {Routes:{ts.net.:[199.247.155.53 2620:111:8007::53]} Hosts:8 LocalDomains:[tailnet-example.ts.net.]+65arpa}
+2026-10-16T02:15:01+02:00 bento tailscaled[1717]: dns: OScfg: {Nameservers:[100.100.100.100 fd7a:115c:a1e0::53] SearchDomains:[tailnet-example.ts.net.] MatchDomains:[tailnet-example.ts.net. ts.net.]+65arpa}
+2026-10-16T02:15:01+02:00 bento tailscaled[1717]: wgengine: set DNS config again after major link change
+2026-10-16T02:15:01+02:00 bento tailscaled[1717]: router: portUpdate(port=41641, network=udp6)
+2026-10-16T02:15:01+02:00 bento tailscaled[1717]: router: portUpdate(port=41641, network=udp4)
+2026-10-16T02:15:01+02:00 bento tailscaled[1717]: Rebind; defIf="enx001122334455", ips=[192.168.1.100/24 fe80::1/64]
+2026-10-16T02:15:01+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr48h3m0s,wr34h38m0s
+2026-10-16T02:15:01+02:00 bento tailscaled[1717]: monitor: gateway and self IP changed: gw=192.168.1.1 self=192.168.1.100
+2026-10-16T02:15:01+02:00 bento tailscaled[1717]: Received error: PollNetMap: read tcp 192.168.1.100:33112->192.168.2.101:443: use of closed network connection
+2026-10-16T02:15:01+02:00 bento tailscaled[1717]: control: controlhttp: forcing port 443 dial due to recent noise dial
+2026-10-16T02:15:01+02:00 bento tailscaled[1717]: post-rebind ping of DERP region 4 okay
+2026-10-16T02:15:02+02:00 bento tailscaled[1717]: control: NetInfo: NetInfo{varies=true ipv6=false ipv6os=true udp=true icmpv4=false derp=#4 portmap= link="" firewallmode="ipt-default"}
+2026-10-16T02:15:02+02:00 bento tailscaled[1717]: magicsock: endpoints changed: 203.0.113.10:2793 (stun), 203.0.113.10:41641 (stun4localport), 172.17.0.1:41641 (local), 172.18.0.1:41641 (local), 172.19.0.1:41641 (local), 172.20.0.1:41641 (local), 172.21.0.1:41641 (local), 192.168.1.72:41641 (local), 192.168.1.100:41641 (local), 172.23.0.1:41641 (local)
+2026-10-16T02:15:02+02:00 bento tailscaled[1717]: control: netmap: got new dial plan from control
+2026-10-16T02:15:02+02:00 bento tailscaled[1717]: netmap: suggested exit node:  ()
+2026-10-16T02:18:01+02:00 bento tailscaled[1717]: monitor: RTM_NEWROUTE: src=192.168.1.72/0, dst=, gw=192.168.1.1, outif=3, table=254
+2026-10-16T02:18:01+02:00 bento tailscaled[1717]: monitor: RTM_DELROUTE: src=192.168.1.72/0, dst=, gw=192.168.1.1, outif=3, table=254
+2026-10-16T02:18:02+02:00 bento tailscaled[1717]: monitor: RTM_NEWROUTE: src=192.168.1.72/0, dst=, gw=192.168.1.1, outif=3, table=254
+2026-10-16T02:18:02+02:00 bento tailscaled[1717]: monitor: RTM_DELROUTE: src=192.168.1.72/0, dst=, gw=192.168.1.1, outif=3, table=254
+2026-10-16T03:36:28+02:00 bento tailscaled[1717]: magicsock: adding connection to derp-7 for [aBcDe]
+2026-10-16T03:36:28+02:00 bento tailscaled[1717]: magicsock: 2 active derp conns: derp-4=cr49h24m0s,wr35h59m0s derp-7=cr0s,wr0s
+2026-10-16T03:36:28+02:00 bento tailscaled[1717]: derphttp.Client.Recv: connecting to derp-7 (tok)
+2026-10-16T03:36:28+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=eadbfec8b84b
+2026-10-16T03:36:28+02:00 bento tailscaled[1717]: magicsock: derp-7 connected; connGen=1
+2026-10-16T03:37:28+02:00 bento tailscaled[1717]: magicsock: closing connection to derp-7 (idle), age 1m0s
+2026-10-16T03:37:28+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr49h25m0s,wr36h0m0s
+2026-10-16T03:38:06+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=c165a39be8d4
+2026-10-16T03:38:35+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=0f5889cccd6a
+2026-10-16T03:39:33+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=372802c6934d
+2026-10-16T03:42:07+02:00 bento tailscaled[1717]: magicsock: adding connection to derp-7 for [aBcDe]
+2026-10-16T03:42:07+02:00 bento tailscaled[1717]: magicsock: 2 active derp conns: derp-4=cr49h30m0s,wr36h5m0s derp-7=cr0s,wr0s
+2026-10-16T03:42:07+02:00 bento tailscaled[1717]: derphttp.Client.Recv: connecting to derp-7 (tok)
+2026-10-16T03:42:07+02:00 bento tailscaled[1717]: control: NetInfo: NetInfo{varies=false ipv6=false ipv6os=true udp=true icmpv4=false derp=#4 portmap= link="" firewallmode="ipt-default"}
+2026-10-16T03:42:07+02:00 bento tailscaled[1717]: magicsock: endpoints changed: 203.0.113.10:41641 (stun), 172.17.0.1:41641 (local), 172.18.0.1:41641 (local), 172.19.0.1:41641 (local), 172.20.0.1:41641 (local), 172.21.0.1:41641 (local), 192.168.1.72:41641 (local), 192.168.1.100:41641 (local), 172.23.0.1:41641 (local)
+2026-10-16T03:42:07+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=e201b976ad5f
+2026-10-16T03:42:08+02:00 bento tailscaled[1717]: magicsock: derp-7 connected; connGen=1
+2026-10-16T03:43:22+02:00 bento tailscaled[1717]: magicsock: closing connection to derp-7 (idle), age 1m15s
+2026-10-16T03:43:22+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr49h31m0s,wr36h6m0s
+2026-10-16T03:44:59+02:00 bento tailscaled[1717]: magicsock: adding connection to derp-7 for [aBcDe]
+2026-10-16T03:44:59+02:00 bento tailscaled[1717]: magicsock: 2 active derp conns: derp-4=cr49h33m0s,wr36h8m0s derp-7=cr0s,wr0s
+2026-10-16T03:44:59+02:00 bento tailscaled[1717]: derphttp.Client.Send: connecting to derp-7 (tok)
+2026-10-16T03:45:00+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=7da86981dae5
+2026-10-16T03:45:00+02:00 bento tailscaled[1717]: magicsock: derp-7 connected; connGen=1
+2026-10-16T03:46:14+02:00 bento tailscaled[1717]: magicsock: closing connection to derp-7 (idle), age 1m15s
+2026-10-16T03:46:14+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr49h34m0s,wr36h9m0s
+2026-10-16T03:47:55+02:00 bento tailscaled[1717]: magicsock: adding connection to derp-7 for [aBcDe]
+2026-10-16T03:47:55+02:00 bento tailscaled[1717]: magicsock: 2 active derp conns: derp-4=cr49h36m0s,wr36h11m0s derp-7=cr0s,wr0s
+2026-10-16T03:47:55+02:00 bento tailscaled[1717]: derphttp.Client.Send: connecting to derp-7 (tok)
+2026-10-16T03:47:56+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=374a25490e03
+2026-10-16T03:47:56+02:00 bento tailscaled[1717]: magicsock: derp-7 connected; connGen=1
+2026-10-16T03:50:10+02:00 bento tailscaled[1717]: magicsock: closing connection to derp-7 (idle), age 2m15s
+2026-10-16T03:50:10+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr49h38m0s,wr36h13m0s
+2026-10-16T03:51:02+02:00 bento tailscaled[1717]: magicsock: adding connection to derp-7 for [aBcDe]
+2026-10-16T03:51:02+02:00 bento tailscaled[1717]: magicsock: 2 active derp conns: derp-4=cr49h39m0s,wr36h14m0s derp-7=cr0s,wr0s
+2026-10-16T03:51:02+02:00 bento tailscaled[1717]: derphttp.Client.Send: connecting to derp-7 (tok)
+2026-10-16T03:51:02+02:00 bento tailscaled[1717]: magicsock: derp-7 connected; connGen=1
+2026-10-16T03:51:29+02:00 bento tailscaled[1717]: magicsock: derp-7 does not know about peer [aBcDe], removing route
+2026-10-16T03:51:32+02:00 bento tailscaled[1717]: magicsock: derp-7 does not know about peer [aBcDe], removing route
+2026-10-16T03:51:35+02:00 bento tailscaled[1717]: magicsock: derp-7 does not know about peer [aBcDe], removing route
+2026-10-16T03:51:38+02:00 bento tailscaled[1717]: magicsock: derp-7 does not know about peer [aBcDe], removing route
+2026-10-16T03:51:41+02:00 bento tailscaled[1717]: magicsock: derp-7 does not know about peer [aBcDe], removing route
+2026-10-16T03:51:44+02:00 bento tailscaled[1717]: magicsock: derp-7 does not know about peer [aBcDe], removing route
+2026-10-16T03:51:47+02:00 bento tailscaled[1717]: magicsock: derp-7 does not know about peer [aBcDe], removing route
+2026-10-16T03:51:50+02:00 bento tailscaled[1717]: magicsock: derp-7 does not know about peer [aBcDe], removing route
+2026-10-16T03:51:50+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=e6e7c36682bd
+2026-10-16T03:53:02+02:00 bento tailscaled[1717]: magicsock: closing connection to derp-7 (idle), age 2m0s
+2026-10-16T03:53:02+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr49h41m0s,wr36h16m0s
+2026-10-16T03:54:26+02:00 bento tailscaled[1717]: magicsock: adding connection to derp-7 for [aBcDe]
+2026-10-16T03:54:26+02:00 bento tailscaled[1717]: magicsock: 2 active derp conns: derp-4=cr49h42m0s,wr36h17m0s derp-7=cr0s,wr0s
+2026-10-16T03:54:26+02:00 bento tailscaled[1717]: derphttp.Client.Send: connecting to derp-7 (tok)
+2026-10-16T03:54:26+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=aeeee5899919
+2026-10-16T03:54:26+02:00 bento tailscaled[1717]: magicsock: derp-7 connected; connGen=1
+2026-10-16T03:55:41+02:00 bento tailscaled[1717]: magicsock: closing connection to derp-7 (idle), age 1m15s
+2026-10-16T03:55:41+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr49h44m0s,wr36h19m0s
+2026-10-16T03:56:05+02:00 bento tailscaled[1717]: magicsock: adding connection to derp-7 for [aBcDe]
+2026-10-16T03:56:05+02:00 bento tailscaled[1717]: magicsock: 2 active derp conns: derp-4=cr49h44m0s,wr36h19m0s derp-7=cr0s,wr0s
+2026-10-16T03:56:05+02:00 bento tailscaled[1717]: derphttp.Client.Recv: connecting to derp-7 (tok)
+2026-10-16T03:56:05+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=e5187dca2b8f
+2026-10-16T03:56:05+02:00 bento tailscaled[1717]: magicsock: derp-7 connected; connGen=1
+2026-10-16T03:57:20+02:00 bento tailscaled[1717]: magicsock: closing connection to derp-7 (idle), age 1m15s
+2026-10-16T03:57:20+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr49h45m0s,wr36h20m0s
+2026-10-16T04:03:13+02:00 bento tailscaled[1717]: magicsock: adding connection to derp-7 for [aBcDe]
+2026-10-16T04:03:13+02:00 bento tailscaled[1717]: magicsock: 2 active derp conns: derp-4=cr49h51m0s,wr36h26m0s derp-7=cr0s,wr0s
+2026-10-16T04:03:13+02:00 bento tailscaled[1717]: derphttp.Client.Send: connecting to derp-7 (tok)
+2026-10-16T04:03:14+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=2cdc12c24c64
+2026-10-16T04:03:14+02:00 bento tailscaled[1717]: magicsock: derp-7 connected; connGen=1
+2026-10-16T04:04:28+02:00 bento tailscaled[1717]: magicsock: closing connection to derp-7 (idle), age 1m15s
+2026-10-16T04:04:28+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr49h52m0s,wr36h27m0s
+2026-10-16T04:15:48+02:00 bento tailscaled[1717]: magicsock: adding connection to derp-7 for [aBcDe]
+2026-10-16T04:15:48+02:00 bento tailscaled[1717]: magicsock: 2 active derp conns: derp-4=cr50h4m0s,wr36h39m0s derp-7=cr0s,wr0s
+2026-10-16T04:15:48+02:00 bento tailscaled[1717]: derphttp.Client.Send: connecting to derp-7 (tok)
+2026-10-16T04:15:48+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=b3154b606523
+2026-10-16T04:15:49+02:00 bento tailscaled[1717]: magicsock: derp-7 connected; connGen=1
+2026-10-16T04:16:48+02:00 bento tailscaled[1717]: magicsock: closing connection to derp-7 (idle), age 1m0s
+2026-10-16T04:16:48+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr50h5m0s,wr36h40m0s
+2026-10-16T04:16:48+02:00 bento tailscaled[1717]: magicsock: adding connection to derp-7 for [aBcDe]
+2026-10-16T04:16:48+02:00 bento tailscaled[1717]: magicsock: 2 active derp conns: derp-4=cr50h5m0s,wr36h40m0s derp-7=cr0s,wr0s
+2026-10-16T04:16:48+02:00 bento tailscaled[1717]: derphttp.Client.Recv: connecting to derp-7 (tok)
+2026-10-16T04:16:49+02:00 bento tailscaled[1717]: magicsock: derp-7 connected; connGen=1
+2026-10-16T04:17:48+02:00 bento tailscaled[1717]: magicsock: closing connection to derp-7 (idle), age 1m0s
+2026-10-16T04:17:48+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr50h6m0s,wr36h41m0s
+2026-10-16T06:15:52+02:00 bento tailscaled[1717]: magicsock: adding connection to derp-7 for [aBcDe]
+2026-10-16T06:15:52+02:00 bento tailscaled[1717]: magicsock: 2 active derp conns: derp-4=cr52h4m0s,wr38h39m0s derp-7=cr0s,wr0s
+2026-10-16T06:15:52+02:00 bento tailscaled[1717]: derphttp.Client.Recv: connecting to derp-7 (tok)
+2026-10-16T06:15:52+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=3cdbf4c24886
+2026-10-16T06:15:53+02:00 bento tailscaled[1717]: magicsock: derp-7 connected; connGen=1
+2026-10-16T06:17:07+02:00 bento tailscaled[1717]: magicsock: closing connection to derp-7 (idle), age 1m15s
+2026-10-16T06:17:07+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr52h5m0s,wr38h40m0s
+2026-10-16T06:20:07+02:00 bento tailscaled[1717]: magicsock: adding connection to derp-7 for [aBcDe]
+2026-10-16T06:20:07+02:00 bento tailscaled[1717]: magicsock: 2 active derp conns: derp-4=cr52h8m0s,wr38h43m0s derp-7=cr0s,wr0s
+2026-10-16T06:20:07+02:00 bento tailscaled[1717]: derphttp.Client.Recv: connecting to derp-7 (tok)
+2026-10-16T06:20:08+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=0c9fd37750c3
+2026-10-16T06:20:08+02:00 bento tailscaled[1717]: magicsock: derp-7 connected; connGen=1
+2026-10-16T06:21:07+02:00 bento tailscaled[1717]: magicsock: closing connection to derp-7 (idle), age 1m0s
+2026-10-16T06:21:07+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr52h9m0s,wr38h44m0s
+2026-10-16T06:21:08+02:00 bento tailscaled[1717]: magicsock: adding connection to derp-7 for [aBcDe]
+2026-10-16T06:21:08+02:00 bento tailscaled[1717]: magicsock: 2 active derp conns: derp-4=cr52h9m0s,wr38h44m0s derp-7=cr0s,wr0s
+2026-10-16T06:21:08+02:00 bento tailscaled[1717]: derphttp.Client.Recv: connecting to derp-7 (tok)
+2026-10-16T06:21:08+02:00 bento tailscaled[1717]: magicsock: derp-7 connected; connGen=1
+2026-10-16T06:23:06+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=9a8d256c4a71
+2026-10-16T06:24:08+02:00 bento tailscaled[1717]: magicsock: closing connection to derp-7 (idle), age 3m0s
+2026-10-16T06:24:08+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr52h12m0s,wr38h47m0s
+2026-10-16T06:33:05+02:00 bento tailscaled[1717]: monitor: RTM_NEWROUTE: src=192.168.1.72/0, dst=, gw=192.168.1.1, outif=3, table=254
+2026-10-16T06:33:05+02:00 bento tailscaled[1717]: monitor: RTM_DELROUTE: src=192.168.1.72/0, dst=, gw=192.168.1.1, outif=3, table=254
+2026-10-16T06:33:05+02:00 bento tailscaled[1717]: monitor: RTM_NEWROUTE: src=192.168.1.72/0, dst=, gw=192.168.1.1, outif=3, table=254
+2026-10-16T06:33:05+02:00 bento tailscaled[1717]: monitor: RTM_DELROUTE: src=192.168.1.72/0, dst=, gw=192.168.1.1, outif=3, table=254
+2026-10-16T06:53:36+02:00 bento tailscaled[1717]: magicsock: adding connection to derp-7 for [aBcDe]
+2026-10-16T06:53:36+02:00 bento tailscaled[1717]: magicsock: 2 active derp conns: derp-4=cr52h42m0s,wr39h16m0s derp-7=cr0s,wr0s
+2026-10-16T06:53:36+02:00 bento tailscaled[1717]: derphttp.Client.Recv: connecting to derp-7 (tok)
+2026-10-16T06:53:36+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=51764885401e
+2026-10-16T06:53:37+02:00 bento tailscaled[1717]: magicsock: derp-7 connected; connGen=1
+2026-10-16T06:54:51+02:00 bento tailscaled[1717]: magicsock: closing connection to derp-7 (idle), age 1m15s
+2026-10-16T06:54:51+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr52h43m0s,wr39h18m0s
+2026-10-16T06:56:40+02:00 bento tailscaled[1717]: monitor: RTM_DELROUTE: src=, dst=fe80::/64, gw=, outif=13, table=254
+2026-10-16T06:56:40+02:00 bento tailscaled[1717]: monitor: RTM_DELROUTE: src=, dst=fe80::10a1:a4ff:fe07:e17c/128, gw=, outif=13, table=255
+2026-10-16T06:56:40+02:00 bento tailscaled[1717]: monitor: RTM_DELROUTE: src=, dst=ff00::/8, gw=, outif=13, table=255
+2026-10-16T06:57:49+02:00 bento tailscaled[1717]: magicsock: adding connection to derp-7 for [aBcDe]
+2026-10-16T06:57:49+02:00 bento tailscaled[1717]: magicsock: 2 active derp conns: derp-4=cr52h46m0s,wr39h21m0s derp-7=cr0s,wr0s
+2026-10-16T06:57:49+02:00 bento tailscaled[1717]: derphttp.Client.Send: connecting to derp-7 (tok)
+2026-10-16T06:57:50+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=5ec166668e2f
+2026-10-16T06:57:50+02:00 bento tailscaled[1717]: magicsock: derp-7 connected; connGen=1
+2026-10-16T07:00:04+02:00 bento tailscaled[1717]: magicsock: closing connection to derp-7 (idle), age 2m15s
+2026-10-16T07:00:04+02:00 bento tailscaled[1717]: magicsock: 1 active derp conns: derp-4=cr52h48m0s,wr39h23m0s
+2026-10-16T07:02:48+02:00 bento tailscaled[1717]: magicsock: adding connection to derp-7 for [aBcDe]
+2026-10-16T07:02:48+02:00 bento tailscaled[1717]: magicsock: 2 active derp conns: derp-4=cr52h51m0s,wr39h26m0s derp-7=cr0s,wr0s
+2026-10-16T07:02:48+02:00 bento tailscaled[1717]: derphttp.Client.Recv: connecting to derp-7 (tok)
+2026-10-16T07:02:48+02:00 bento tailscaled[1717]: magicsock: disco: node [aBcDe] d:c98ea6f710c0a453 now using 198.51.100.14:41641 mtu=1360 tx=2c0b4de13ff2
+2026-10-16T07:02:49+02:00 bento tailscaled[1717]: magicsock: derp-7 connected; connGen=1

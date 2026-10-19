@@ -1,0 +1,40 @@
+appId: ch.bento.dashboard
+productName: Bento Dashboard
+directories:
+  buildResources: build
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!tests/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!vitest.config.{js,ts,mjs,cjs}'
+  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+# Electron fuses: switch off what the app never uses, keep the app code integrity-checked.
+electronFuses:
+  runAsNode: false
+  enableCookieEncryption: true
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
+asarUnpack:
+  - resources/**
+win:
+  executableName: bento-dashboard
+  target:
+    - nsis
+nsis:
+  artifactName: ${name}-${version}-setup.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always
+publish:
+  # Public repository: the app reads the releases without any credential. Never put a token here.
+  # Keep owner/repo in sync with src/main/updater/repository.ts.
+  provider: github
+  owner: Fbrend23
+  repo: bento-dashboard
+  releaseType: release
+npmRebuild: false

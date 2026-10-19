@@ -1,0 +1,200 @@
+Unsupported codec with id 0 for input stream 7
+Unsupported codec with id 0 for input stream 8
+[19:11:15] [INF] [56] MediaBrowser.Providers.TV.SeriesMetadataService: Removing virtual season 0 in series Example Series
+[19:11:15] [INF] [56] Emby.Server.Implementations.Library.LibraryManager: Removing item, Type: Season, Name: Specials, Path: , Id: 7af09067-7e65-8097-314b-e56cdf8635a7
+[19:11:15] [INF] [56] MediaBrowser.Providers.TV.SeriesMetadataService: Removing virtual season null in series Example Series
+[19:11:15] [INF] [56] Emby.Server.Implementations.Library.LibraryManager: Removing item, Type: Season, Name: Season Unknown, Path: , Id: 18c920c3-49a6-8dba-5d55-3cc18d10de13
+[19:11:52] [INF] [56] Jellyfin.Plugin.JellyfinEnhanced: [TagCache] Saved 1087 entries to disk
+[19:12:15] [INF] [56] IntroSkipper.Services.Entrypoint: Initiating automatic analysis task
+[19:12:15] [INF] [56] IntroSkipper.Manager.QueueManager: Running enqueue of items in library Séries
+[19:12:15] [INF] [56] IntroSkipper.Manager.QueueManager: Episode One (2bb23692-0222-8a36-b3cc-fbc15d95c94f) has an invalid SeasonId
+[19:12:15] [INF] [56] IntroSkipper.Manager.QueueManager: Episode Two (c5d06c91-41df-e474-dd38-88c8332527a9) has an invalid SeasonId
+[19:12:15] [INF] [56] IntroSkipper.Manager.QueueManager: Episode Three (99345b2f-f5d2-d67c-ffdd-08d144d94371) has an invalid SeasonId
+[19:12:15] [INF] [56] IntroSkipper.Manager.QueueManager: Running enqueue of items in library Films
+[19:12:15] [INF] [56] IntroSkipper.Manager.QueueManager: Refreshed metadata for 3 episodes with invalid SeasonIds
+[19:12:15] [INF] [56] IntroSkipper.Services.Entrypoint: No libraries selected for analysis. To enable, check library configuration > Media Segment Providers.
+[19:12:15] [INF] [56] IntroSkipper.Services.Entrypoint: Analyzing ended, but we need to analyze again!
+[19:13:15] [INF] [47] IntroSkipper.Services.Entrypoint: Initiating automatic analysis task
+[19:13:15] [INF] [47] IntroSkipper.Manager.QueueManager: Running enqueue of items in library Séries
+[19:13:16] [INF] [47] IntroSkipper.Manager.QueueManager: Running enqueue of items in library Films
+[19:13:16] [INF] [47] IntroSkipper.Services.Entrypoint: [Mode: Introduction] Analyzing 22 files from Example Series season 4
+[19:13:19] [INF] [47] IntroSkipper.Services.Entrypoint: [Mode: Credits] Analyzing 22 files from Example Series season 4
+[matroska,webm @ 0x582ae1e8fc40] Could not find codec parameters for stream 3 (Attachment: none): unknown codec
+Consider increasing the value for the 'analyzeduration' (0) and 'probesize' (5000000) options
+[matroska,webm @ 0x582ae1e8fc40] Could not find codec parameters for stream 4 (Attachment: none): unknown codec
+Consider increasing the value for the 'analyzeduration' (0) and 'probesize' (5000000) options
+[matroska,webm @ 0x582ae1e8fc40] Could not find codec parameters for stream 5 (Attachment: none): unknown codec
+Consider increasing the value for the 'analyzeduration' (0) and 'probesize' (5000000) options
+[matroska,webm @ 0x582ae1e8fc40] Could not find codec parameters for stream 6 (Attachment: none): unknown codec
+Consider increasing the value for the 'analyzeduration' (0) and 'probesize' (5000000) options
+[matroska,webm @ 0x582ae1e8fc40] Could not find codec parameters for stream 7 (Attachment: none): unknown codec
+Consider increasing the value for the 'analyzeduration' (0) and 'probesize' (5000000) options
+[matroska,webm @ 0x582ae1e8fc40] Could not find codec parameters for stream 8 (Attachment: none): unknown codec
+Consider increasing the value for the 'analyzeduration' (0) and 'probesize' (5000000) options
+[19:13:24] [INF] [47] IntroSkipper.Services.Entrypoint: [Mode: Recap] Analyzing 22 files from Example Series season 4
+[19:13:24] [INF] [47] IntroSkipper.Services.Entrypoint: [Mode: Preview] Analyzing 22 files from Example Series season 4
+[19:13:24] [INF] [47] IntroSkipper.Services.Entrypoint: [Mode: Commercial] Analyzing 22 files from Example Series season 4
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E01 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E03 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 1 for /data/tv/Example Series/Example Series - S04E04 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E05 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E06 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E07 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E08 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E09 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E10 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E11 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 1 for /data/tv/Example Series/Example Series - S04E12 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E13 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E14 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E15 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E16 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E17 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E18 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E19 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E22 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E23 - Example Episode.mkv
+[19:13:24] [INF] [48] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E24 - Example Episode.mkv
+[19:13:24] [INF] [47] Jellyfin.Server.Implementations.MediaSegments.MediaSegmentManager: Media Segment provider Intro Skipper found 2 for /data/tv/Example Series/Example Series - S04E02 - Example Episode.mkv
+[22:12:41] [INF] [35] Jellyfin.Plugin.JellyfinEnhanced: [Requests User Import] Auto-import is disabled in plugin configuration.
+[22:12:41] [INF] [35] Emby.Server.Implementations.ScheduledTasks.TaskManager: Import Jellyfin Users to Requests Completed after 0 minute(s) and 0 seconds
+[22:12:41] [INF] [35] Emby.Server.Implementations.ScheduledTasks.Tasks.OptimizeDatabaseTask: Optimizing and vacuuming jellyfin.db...
+[22:12:41] [INF] [35] Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider: jellyfin.db optimized successfully!
+[22:12:41] [INF] [35] Emby.Server.Implementations.ScheduledTasks.TaskManager: Optimize database Completed after 0 minute(s) and 0 seconds
+[03:00:00] [INF] [88] Jellyfin.Plugin.JellyfinEnhanced: [Requests→Jellyfin Watchlist Sync] Sync is disabled in plugin configuration.
+[03:00:00] [INF] [88] Emby.Server.Implementations.ScheduledTasks.TaskManager: Sync Watchlist from Requests to Jellyfin Completed after 0 minute(s) and 0 seconds
+[03:00:00] [INF] [52] Jellyfin.Plugin.JellyfinEnhanced: [TagCacheMonitor] Event subscriptions active
+[03:00:00] [INF] [52] Jellyfin.Plugin.JellyfinEnhanced: [TagCache] Reconciling changes since 2026-10-14T00:58:00.0010910Z
+[03:00:01] [INF] [31] Emby.Server.Implementations.ScheduledTasks.TaskManager: Daily trigger for Sync Watchlist from Requests to Jellyfin set to fire at 2026-10-16 03:00:00.000 +02:00, which is 23:59:58.9987845 from now.
+[03:00:01] [INF] [48] Emby.Server.Implementations.ScheduledTasks.TaskManager: Daily trigger for Refresh Tag Cache set to fire at 2026-10-16 03:00:00.000 +02:00, which is 23:59:58.9927419 from now.
+[03:00:02] [INF] [52] Jellyfin.Plugin.JellyfinEnhanced: [TagCache] Saved 1069 entries to disk
+[03:00:02] [INF] [52] Jellyfin.Plugin.JellyfinEnhanced: [TagCache] Reconciliation complete: 8 changed items, 10 entries checked
+[03:00:02] [INF] [52] Emby.Server.Implementations.ScheduledTasks.TaskManager: Refresh Tag Cache Completed after 0 minute(s) and 2 seconds
+[03:30:00] [INF] [81] Jellyfin.Plugin.JellyfinEnhanced: [Jellyfin→Requests Watchlist Sync] Sync is disabled in plugin configuration.
+[03:30:00] [INF] [81] Emby.Server.Implementations.ScheduledTasks.TaskManager: Sync Watchlist from Jellyfin to Requests Completed after 0 minute(s) and 0 seconds
+[03:30:01] [INF] [73] Emby.Server.Implementations.ScheduledTasks.TaskManager: Daily trigger for Sync Watchlist from Jellyfin to Requests set to fire at 2026-10-16 03:30:00.000 +02:00, which is 23:59:58.9989962 from now.
+[04:04:33] [INF] [92] Jellyfin.Plugin.JellyfinEnhanced: [CDN] Refreshing local CDN asset cache…
+[04:04:33] [INF] [47] Emby.Server.Implementations.ScheduledTasks.TaskManager: Send Anonymous Usage Report Completed after 0 minute(s) and 0 seconds
+[04:04:34] [INF] [53] Emby.Server.Implementations.ScheduledTasks.TaskManager: Clean Transcode Directory Completed after 0 minute(s) and 0 seconds
+[04:04:34] [INF] [63] Emby.Server.Implementations.ScheduledTasks.TaskManager: Clean Log Directory Completed after 0 minute(s) and 0 seconds
+[04:04:34] [INF] [62] Emby.Server.Implementations.ScheduledTasks.TaskManager: Clean Cache Directory Completed after 0 minute(s) and 0 seconds
+[04:04:35] [INF] [47] Emby.Server.Implementations.ScheduledTasks.TaskManager: Download missing lyrics Completed after 0 minute(s) and 1 seconds
+[04:04:35] [INF] [53] Emby.Server.Implementations.ScheduledTasks.TaskManager: TasksRefreshChannels Completed after 0 minute(s) and 0 seconds
+[04:04:36] [INF] [41] Emby.Server.Implementations.ScheduledTasks.TaskManager: Audio Normalization Completed after 0 minute(s) and 1 seconds
+[04:04:37] [INF] [41] Jellyfin.LiveTv.Guide.GuideManager: Refreshing guide with 7 days of guide data
+[04:04:37] [INF] [41] Emby.Server.Implementations.ScheduledTasks.TaskManager: Refresh Guide Completed after 0 minute(s) and 3 seconds
+[04:04:42] [INF] [53] Emby.Server.Implementations.ScheduledTasks.TaskManager: Update Plugins Completed after 0 minute(s) and 8 seconds
+[04:05:04] [INF] [36] Jellyfin.Plugin.JellyfinEnhanced: [CDN] Refreshed 58/58 known assets into the local cache.
+[04:05:04] [INF] [36] Emby.Server.Implementations.ScheduledTasks.TaskManager: Refresh CDN Assets Completed after 0 minute(s) and 31 seconds
+[04:05:42] [INF] [68] Emby.Server.Implementations.ScheduledTasks.TaskManager: Download missing subtitles Completed after 1 minute(s) and 7 seconds
+[04:07:36] [INF] [37] Emby.Server.Implementations.IO.LibraryMonitor: Stopping directory watching for path /data/movies
+[04:07:36] [INF] [37] Emby.Server.Implementations.IO.LibraryMonitor: Stopping directory watching for path /data/tv
+[04:07:36] [INF] [37] Emby.Server.Implementations.Library.LibraryManager: Validating media library
+[04:07:36] [WRN] [37] MediaBrowser.Controller.Entities.BaseItem: Library folder /config/data/data/playlists is inaccessible or empty, skipping
+[04:07:36] [WRN] [37] MediaBrowser.Controller.Entities.BaseItem: Library folder /config/data/data/playlists is inaccessible or empty, skipping
+[04:07:39] [INF] [60] Emby.Server.Implementations.ScheduledTasks.TaskManager: Media Segment Scan Completed after 0 minute(s) and 2 seconds
+[04:08:01] [WRN] [37] Microsoft.EntityFrameworkCore.Query: Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[04:08:09] [INF] [37] Emby.Server.Implementations.ScheduledTasks.TaskManager: Scan Media Library Completed after 0 minute(s) and 33 seconds
+[04:08:09] [INF] [48] Emby.Server.Implementations.IO.LibraryMonitor: Watching directory /data/movies
+[04:08:09] [INF] [31] Emby.Server.Implementations.IO.LibraryMonitor: Watching directory /data/tv
+[04:09:09] [INF] [83] IntroSkipper.Services.Entrypoint: Initiating automatic analysis task
+[04:09:09] [INF] [83] IntroSkipper.Manager.QueueManager: Running enqueue of items in library Séries
+[04:09:09] [INF] [83] IntroSkipper.Manager.QueueManager: Running enqueue of items in library Films
+[04:13:42] [INF] [61] Jellyfin.Plugin.JellyfinEnhanced: [Requests User Import] Auto-import is disabled in plugin configuration.
+[04:13:42] [INF] [61] Emby.Server.Implementations.ScheduledTasks.TaskManager: Import Jellyfin Users to Requests Completed after 0 minute(s) and 0 seconds
+[04:13:42] [INF] [92] Emby.Server.Implementations.ScheduledTasks.Tasks.OptimizeDatabaseTask: Optimizing and vacuuming jellyfin.db...
+[04:13:42] [INF] [92] Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider: jellyfin.db optimized successfully!
+[04:13:42] [INF] [92] Emby.Server.Implementations.ScheduledTasks.TaskManager: Optimize database Completed after 0 minute(s) and 0 seconds
+[08:00:00] [INF] [78] IntroSkipper.ScheduledTasks.DetectSegmentsTask: Scheduled Task is starting
+[08:00:00] [INF] [78] IntroSkipper.Manager.QueueManager: Running enqueue of items in library Séries
+[08:00:00] [INF] [78] IntroSkipper.Manager.QueueManager: Running enqueue of items in library Films
+[08:00:00] [INF] [38] Emby.Server.Implementations.ScheduledTasks.TaskManager: Daily trigger for Detect and Analyze Media Segments set to fire at 2026-10-16 08:00:00.000 +02:00, which is 23:59:59.0001150 from now.
+[08:00:01] [INF] [26] Emby.Server.Implementations.ScheduledTasks.TaskManager: Detect and Analyze Media Segments Completed after 0 minute(s) and 1 seconds
+[08:30:00] [INF] [46] Emby.Server.Implementations.Chapters.ChapterManager: Skipping chapter image extraction for OVA as the average chapter duration 0 was lower than the minimum threshold 10000000
+[08:30:00] [INF] [46] Emby.Server.Implementations.Chapters.ChapterManager: Skipping chapter image extraction for That Would Be Me as the average chapter duration 0 was lower than the minimum threshold 10000000
+[08:30:00] [INF] [46] Emby.Server.Implementations.Chapters.ChapterManager: Skipping chapter image extraction for Reckoning as the average chapter duration 0 was lower than the minimum threshold 10000000
+[08:30:00] [INF] [46] Emby.Server.Implementations.Chapters.ChapterManager: Skipping chapter image extraction for Aldhani as the average chapter duration 0 was lower than the minimum threshold 10000000
+[08:30:00] [INF] [46] Emby.Server.Implementations.Chapters.ChapterManager: Skipping chapter image extraction for The Axe Forgets as the average chapter duration 0 was lower than the minimum threshold 10000000
+[08:30:00] [INF] [46] Emby.Server.Implementations.Chapters.ChapterManager: Skipping chapter image extraction for The Eye as the average chapter duration 0 was lower than the minimum threshold 10000000
+[08:30:00] [INF] [46] Emby.Server.Implementations.Chapters.ChapterManager: Skipping chapter image extraction for Announcement as the average chapter duration 0 was lower than the minimum threshold 10000000
+[08:30:00] [INF] [46] Emby.Server.Implementations.Chapters.ChapterManager: Skipping chapter image extraction for Narkina 5 as the average chapter duration 0 was lower than the minimum threshold 10000000
+[08:30:00] [INF] [46] Emby.Server.Implementations.Chapters.ChapterManager: Skipping chapter image extraction for Nobody's Listening! as the average chapter duration 0 was lower than the minimum threshold 10000000
+[08:30:00] [INF] [46] Emby.Server.Implementations.Chapters.ChapterManager: Skipping chapter image extraction for One Way Out as the average chapter duration 0 was lower than the minimum threshold 10000000
+[08:30:00] [INF] [46] Emby.Server.Implementations.Chapters.ChapterManager: Skipping chapter image extraction for Daughter of Ferrix as the average chapter duration 0 was lower than the minimum threshold 10000000
+[08:30:00] [INF] [46] Emby.Server.Implementations.Chapters.ChapterManager: Skipping chapter image extraction for Rix Road as the average chapter duration 0 was lower than the minimum threshold 10000000
+[08:30:00] [INF] [46] Emby.Server.Implementations.Chapters.ChapterManager: Skipping chapter image extraction for Spider-Man: Brand New Day as the average chapter duration 0 was lower than the minimum threshold 10000000
+[08:30:00] [INF] [46] Emby.Server.Implementations.ScheduledTasks.TaskManager: Extract Chapter Images Completed after 0 minute(s) and 0 seconds
+[08:30:01] [INF] [73] Emby.Server.Implementations.ScheduledTasks.TaskManager: Daily trigger for Extract Chapter Images set to fire at 2026-10-16 08:30:00.000 +02:00, which is 23:59:58.9991219 from now.
+[08:30:01] [INF] [73] Emby.Server.Implementations.ScheduledTasks.TaskManager: Daily trigger for Generate Trickplay Images set to fire at 2026-10-16 08:30:00.000 +02:00, which is 23:59:58.9979783 from now.
+[08:30:01] [INF] [21] Emby.Server.Implementations.ScheduledTasks.TaskManager: Generate Trickplay Images Completed after 0 minute(s) and 1 seconds
+[10:14:43] [INF] [35] Jellyfin.Plugin.JellyfinEnhanced: [Requests User Import] Auto-import is disabled in plugin configuration.
+[10:14:43] [INF] [35] Emby.Server.Implementations.ScheduledTasks.TaskManager: Import Jellyfin Users to Requests Completed after 0 minute(s) and 0 seconds
+[10:14:43] [INF] [35] Emby.Server.Implementations.ScheduledTasks.Tasks.OptimizeDatabaseTask: Optimizing and vacuuming jellyfin.db...
+[10:14:43] [INF] [35] Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider: jellyfin.db optimized successfully!
+[10:14:43] [INF] [35] Emby.Server.Implementations.ScheduledTasks.TaskManager: Optimize database Completed after 0 minute(s) and 0 seconds
+[16:08:37] [INF] [10] Emby.Server.Implementations.IO.LibraryMonitor: Stopping directory watching for path /data/movies
+[16:08:37] [INF] [10] Emby.Server.Implementations.IO.LibraryMonitor: Stopping directory watching for path /data/tv
+[16:08:37] [INF] [10] Emby.Server.Implementations.Library.LibraryManager: Validating media library
+[16:08:37] [WRN] [10] MediaBrowser.Controller.Entities.BaseItem: Library folder /config/data/data/playlists is inaccessible or empty, skipping
+[16:08:37] [WRN] [69] MediaBrowser.Controller.Entities.BaseItem: Library folder /config/data/data/playlists is inaccessible or empty, skipping
+[16:08:39] [INF] [30] Emby.Server.Implementations.ScheduledTasks.TaskManager: Media Segment Scan Completed after 0 minute(s) and 2 seconds
+[16:09:04] [INF] [69] Emby.Server.Implementations.ScheduledTasks.TaskManager: Scan Media Library Completed after 0 minute(s) and 26 seconds
+[16:09:04] [INF] [81] Emby.Server.Implementations.IO.LibraryMonitor: Watching directory /data/movies
+[16:09:04] [INF] [63] Emby.Server.Implementations.IO.LibraryMonitor: Watching directory /data/tv
+[16:10:04] [INF] [89] IntroSkipper.Services.Entrypoint: Initiating automatic analysis task
+[16:10:04] [INF] [89] IntroSkipper.Manager.QueueManager: Running enqueue of items in library Séries
+[16:10:04] [INF] [89] IntroSkipper.Manager.QueueManager: Running enqueue of items in library Films
+[16:15:44] [INF] [60] Jellyfin.Plugin.JellyfinEnhanced: [Requests User Import] Auto-import is disabled in plugin configuration.
+[16:15:44] [INF] [60] Emby.Server.Implementations.ScheduledTasks.TaskManager: Import Jellyfin Users to Requests Completed after 0 minute(s) and 0 seconds
+[16:15:44] [INF] [42] Emby.Server.Implementations.ScheduledTasks.Tasks.OptimizeDatabaseTask: Optimizing and vacuuming jellyfin.db...
+[16:15:44] [INF] [42] Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider: jellyfin.db optimized successfully!
+[16:15:44] [INF] [42] Emby.Server.Implementations.ScheduledTasks.TaskManager: Optimize database Completed after 0 minute(s) and 0 seconds
+[22:16:45] [INF] [70] Jellyfin.Plugin.JellyfinEnhanced: [Requests User Import] Auto-import is disabled in plugin configuration.
+[22:16:45] [INF] [70] Emby.Server.Implementations.ScheduledTasks.TaskManager: Import Jellyfin Users to Requests Completed after 0 minute(s) and 0 seconds
+[22:16:45] [INF] [89] Emby.Server.Implementations.ScheduledTasks.Tasks.OptimizeDatabaseTask: Optimizing and vacuuming jellyfin.db...
+[22:16:45] [INF] [89] Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider: jellyfin.db optimized successfully!
+[22:16:45] [INF] [89] Emby.Server.Implementations.ScheduledTasks.TaskManager: Optimize database Completed after 0 minute(s) and 0 seconds
+[03:00:00] [INF] [82] Jellyfin.Plugin.JellyfinEnhanced: [TagCacheMonitor] Event subscriptions active
+[03:00:00] [INF] [18] Jellyfin.Plugin.JellyfinEnhanced: [Requests→Jellyfin Watchlist Sync] Sync is disabled in plugin configuration.
+[03:00:00] [INF] [18] Emby.Server.Implementations.ScheduledTasks.TaskManager: Sync Watchlist from Requests to Jellyfin Completed after 0 minute(s) and 0 seconds
+[03:00:00] [INF] [82] Jellyfin.Plugin.JellyfinEnhanced: [TagCache] Reconciling changes since 2026-10-15T00:58:00.0133630Z
+[03:00:00] [INF] [82] Jellyfin.Plugin.JellyfinEnhanced: [TagCache] Saved 1069 entries to disk
+[03:00:00] [INF] [82] Jellyfin.Plugin.JellyfinEnhanced: [TagCache] Reconciliation complete: 0 changed items, 0 entries checked
+[03:00:00] [INF] [82] Emby.Server.Implementations.ScheduledTasks.TaskManager: Refresh Tag Cache Completed after 0 minute(s) and 0 seconds
+[03:00:00] [INF] [41] Emby.Server.Implementations.ScheduledTasks.TaskManager: Daily trigger for Refresh Tag Cache set to fire at 2026-10-17 03:00:00.000 +02:00, which is 23:59:59.0002627 from now.
+[03:00:01] [INF] [41] Emby.Server.Implementations.ScheduledTasks.TaskManager: Daily trigger for Sync Watchlist from Requests to Jellyfin set to fire at 2026-10-17 03:00:00.000 +02:00, which is 23:59:58.9961596 from now.
+[03:30:00] [INF] [99] Jellyfin.Plugin.JellyfinEnhanced: [Jellyfin→Requests Watchlist Sync] Sync is disabled in plugin configuration.
+[03:30:00] [INF] [99] Emby.Server.Implementations.ScheduledTasks.TaskManager: Sync Watchlist from Jellyfin to Requests Completed after 0 minute(s) and 0 seconds
+[03:30:01] [INF] [27] Emby.Server.Implementations.ScheduledTasks.TaskManager: Daily trigger for Sync Watchlist from Jellyfin to Requests set to fire at 2026-10-17 03:30:00.000 +02:00, which is 23:59:58.9995372 from now.
+[04:05:34] [INF] [54] Emby.Server.Implementations.ScheduledTasks.TaskManager: Send Anonymous Usage Report Completed after 0 minute(s) and 0 seconds
+[04:05:34] [INF] [54] Jellyfin.Plugin.JellyfinEnhanced: [CDN] Refreshing local CDN asset cache…
+[04:05:35] [INF] [92] Emby.Server.Implementations.ScheduledTasks.TaskManager: Clean Transcode Directory Completed after 0 minute(s) and 0 seconds
+[04:05:35] [INF] [50] Emby.Server.Implementations.ScheduledTasks.TaskManager: Download missing lyrics Completed after 0 minute(s) and 0 seconds
+[04:05:35] [INF] [50] Emby.Server.Implementations.ScheduledTasks.TaskManager: Clean Log Directory Completed after 0 minute(s) and 0 seconds
+[04:05:35] [INF] [41] Emby.Server.Implementations.ScheduledTasks.TaskManager: TasksRefreshChannels Completed after 0 minute(s) and 0 seconds
+[04:05:35] [INF] [92] Emby.Server.Implementations.ScheduledTasks.TaskManager: Audio Normalization Completed after 0 minute(s) and 0 seconds
+[04:05:35] [INF] [54] Emby.Server.Implementations.ScheduledTasks.TaskManager: Clean Cache Directory Completed after 0 minute(s) and 0 seconds
+[04:05:38] [INF] [60] Emby.Server.Implementations.ScheduledTasks.TaskManager: Update Plugins Completed after 0 minute(s) and 3 seconds
+[04:05:38] [INF] [60] Jellyfin.LiveTv.Guide.GuideManager: Refreshing guide with 7 days of guide data
+[04:05:38] [INF] [60] Emby.Server.Implementations.ScheduledTasks.TaskManager: Refresh Guide Completed after 0 minute(s) and 3 seconds
+[04:06:00] [INF] [60] Jellyfin.Plugin.JellyfinEnhanced: [CDN] Refreshed 58/58 known assets into the local cache.
+[04:06:00] [INF] [60] Emby.Server.Implementations.ScheduledTasks.TaskManager: Refresh CDN Assets Completed after 0 minute(s) and 25 seconds
+[04:06:29] [INF] [63] Emby.Server.Implementations.ScheduledTasks.TaskManager: Download missing subtitles Completed after 0 minute(s) and 53 seconds
+[04:09:38] [INF] [50] Emby.Server.Implementations.IO.LibraryMonitor: Stopping directory watching for path /data/movies
+[04:09:38] [INF] [50] Emby.Server.Implementations.IO.LibraryMonitor: Stopping directory watching for path /data/tv
+[04:09:38] [INF] [50] Emby.Server.Implementations.Library.LibraryManager: Validating media library
+[04:09:38] [WRN] [50] MediaBrowser.Controller.Entities.BaseItem: Library folder /config/data/data/playlists is inaccessible or empty, skipping
+[04:09:38] [WRN] [50] MediaBrowser.Controller.Entities.BaseItem: Library folder /config/data/data/playlists is inaccessible or empty, skipping
+[04:09:40] [INF] [92] Emby.Server.Implementations.ScheduledTasks.TaskManager: Media Segment Scan Completed after 0 minute(s) and 2 seconds
+[04:09:47] [INF] [50] Emby.Server.Implementations.Library.LibraryManager: Removing item, Type: Episode, Name: Example Episode, Path: , Id: 34143297-fb16-7de2-1d09-62fad73c447b
+[04:10:11] [INF] [52] Emby.Server.Implementations.ScheduledTasks.TaskManager: Scan Media Library Completed after 0 minute(s) and 32 seconds
+[04:10:11] [INF] [92] Emby.Server.Implementations.IO.LibraryMonitor: Watching directory /data/movies
+[04:10:11] [INF] [65] Emby.Server.Implementations.IO.LibraryMonitor: Watching directory /data/tv
+[04:11:11] [INF] [86] IntroSkipper.Services.Entrypoint: Initiating automatic analysis task
+[04:11:11] [INF] [86] IntroSkipper.Manager.QueueManager: Running enqueue of items in library Séries
+[04:11:11] [INF] [86] IntroSkipper.Manager.QueueManager: Running enqueue of items in library Films
+[04:17:46] [INF] [31] Jellyfin.Plugin.JellyfinEnhanced: [Requests User Import] Auto-import is disabled in plugin configuration.
+[04:17:46] [INF] [31] Emby.Server.Implementations.ScheduledTasks.TaskManager: Import Jellyfin Users to Requests Completed after 0 minute(s) and 0 seconds
+[04:17:46] [INF] [23] Emby.Server.Implementations.ScheduledTasks.Tasks.OptimizeDatabaseTask: Optimizing and vacuuming jellyfin.db...
+[04:17:46] [INF] [23] Jellyfin.Database.Providers.Sqlite.SqliteDatabaseProvider: jellyfin.db optimized successfully!
+[04:17:46] [INF] [23] Emby.Server.Implementations.ScheduledTasks.TaskManager: Optimize database Completed after 0 minute(s) and 0 seconds

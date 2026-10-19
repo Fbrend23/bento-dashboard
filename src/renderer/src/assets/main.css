@@ -1,0 +1,160 @@
+@import '@fontsource/zen-kaku-gothic-new/latin-400.css';
+@import '@fontsource/zen-kaku-gothic-new/latin-500.css';
+@import '@fontsource/zen-kaku-gothic-new/latin-700.css';
+
+/*
+ * Le plateau : the window is a bento tray seen from above. The tray is celadon, each
+ * compartment is a recessed well, and the lid (verdict) takes the tint of the current state.
+ */
+:root {
+  color-scheme: light dark;
+
+  --tray: #cfddd4;
+  --well: #f1f5f1;
+  --well-edge: #b7c9be;
+  --well-shine: rgba(255, 255, 255, 0.6);
+  --ink: #16241e;
+  --ink-soft: #4a5c53;
+  --indigo: #2c4a8c;
+  --indigo-ink: #ffffff;
+
+  --jade: #1b7347;
+  --jade-lid: #c4e5d1;
+  --amber: #8f5c00;
+  --amber-lid: #f1dfae;
+  --lacquer: #b02e1c;
+  --lacquer-lid: #f3c9c1;
+  --stone: #62716a;
+  --stone-lid: #dbe3de;
+
+  --cell-off: rgba(22, 36, 30, 0.12);
+
+  /* Chart series, in a fixed order per entity. Checked with the dataviz palette validator on the
+     well surface: lightness band, chroma, colour-blind separation. Not the status colours. */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --radius-tray: 14px;
+  --radius-well: 6px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tray: #0e1914;
+    --well: #15221c;
+    --well-edge: #263a31;
+    --well-shine: rgba(255, 255, 255, 0);
+    --ink: #e3eee8;
+    --ink-soft: #9db2a7;
+    --indigo: #8fa9e6;
+    --indigo-ink: #0e1914;
+
+    --jade: #4fcb8b;
+    --jade-lid: #173a29;
+    --amber: #f0b545;
+    --amber-lid: #3d2f10;
+    --lacquer: #ff7a68;
+    --lacquer-lid: #43201b;
+    --stone: #8da097;
+    --stone-lid: #1d2b25;
+
+    --cell-off: rgba(227, 238, 232, 0.13);
+
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--tray);
+  color: var(--ink);
+  font-family: 'Zen Kaku Gothic New', system-ui, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--indigo);
+  color: var(--indigo-ink);
+}
+
+/* A compartment: recessed, flat, no shadow. */
+.well {
+  background: var(--well);
+  border: 1px solid var(--well-edge);
+  border-radius: var(--radius-well);
+  box-shadow: inset 0 1px 0 var(--well-shine);
+  padding: 16px 18px 18px;
+}
+
+.well > h2 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+.button {
+  padding: 7px 14px;
+  border: 1px solid var(--well-edge);
+  border-radius: var(--radius-well);
+  background: var(--well);
+  font-weight: 500;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--ink-soft);
+}
+
+.button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.button.primary {
+  border-color: var(--indigo);
+  background: var(--indigo);
+  color: var(--indigo-ink);
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

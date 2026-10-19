@@ -1,0 +1,6 @@
+Filesystem                                 1-blocks          Used     Available Capacity Mounted on
+/dev/mapper/ubuntu--vg--1-ubuntu--lv   980122034176  290857922560  639401177088      32% /
+efivarfs                                     131072         66674         59278      53% /sys/firmware/efi/efiars
+/dev/sdb2                                2040373248     232976384    1683247104      13% /boot
+/dev/sdb1                                1124995072       6438912    1118556160       1% /boot/efi
+192.0.2.10:/export/media          11490224111616 5121452933120 6368771178496      45% /mnt/nas
