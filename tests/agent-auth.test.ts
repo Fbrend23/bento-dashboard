@@ -85,6 +85,16 @@ describe('authorize: opening the page from elsewhere', () => {
     expect(authorize(request, options)).toEqual({ ok: true })
   })
 
+  it('allows the launch of the installed app (a browser navigation without initiator)', () => {
+    // Seen on the phone: cross-site, mode navigate, dest empty.
+    const request = get({
+      'sec-fetch-site': 'cross-site',
+      'sec-fetch-mode': 'navigate',
+      'sec-fetch-dest': 'empty'
+    })
+    expect(authorize(request, options)).toEqual({ ok: true })
+  })
+
   it('still needs the login for a navigation', () => {
     const request = get({
       'tailscale-user-login': 'someone@example.com',

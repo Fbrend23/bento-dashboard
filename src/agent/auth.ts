@@ -94,11 +94,14 @@ export function authorize(request: AuthRequest, options: AuthOptions): AuthResul
     if (site === undefined || site === 'same-origin' || site === 'none') return { ok: true }
     // Opening the page from a link or another app is a navigation from "another site". It is
     // harmless: the opener cannot read what a navigation loads, and the page itself talks to
-    // the agent from its own origin. Only `dest: document` is checked, not the mode: our service
-    // worker relays the launch of the installed app with `fetch(request)`, which turns the mode
-    // from `navigate` into `same-origin` and keeps site and dest. A foreign fetch has
-    // `dest: empty`, an iframe `dest: iframe`, and a web page cannot forge these headers.
-    return single(headers, 'sec-fetch-dest') === 'document' ? { ok: true } : DENIED
+    // the agent from its own origin. Two shapes are accepted, whatever the site: `dest: document`
+    // (a normal navigation; our service worker relays it with `fetch(request)`, which turns the
+    // mode from `navigate` into `same-origin`) and `mode: navigate` with `dest: empty` (how the
+    // installed app is launched on Android, seen on the phone). A foreign fetch has `mode: cors`
+    // or `no-cors`, an iframe `dest: iframe`, and a web page cannot forge these headers.
+    const dest = single(headers, 'sec-fetch-dest')
+    const launch = single(headers, 'sec-fetch-mode') === 'navigate' && dest === 'empty'
+    return dest === 'document' || launch ? { ok: true } : DENIED
   }
 
   if (site !== 'same-origin') return DENIED
