@@ -1,6 +1,9 @@
 [Unit]
 Description=Bento agent (page du téléphone et actions sur les conteneurs)
 After=network-online.target docker.service
+# Au bout de 5 échecs en une minute, systemd renonce au lieu de boucler à l'infini.
+StartLimitIntervalSec=60
+StartLimitBurst=5
 
 [Service]
 Type=simple

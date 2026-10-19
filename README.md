@@ -209,6 +209,19 @@ sudo tailscale serve --bg --https=443 http://127.0.0.1:8484
 Les fichiers de `/opt/bento-agent` appartiennent à root : l'agent, qui tourne sous `bento-dash`, ne
 peut pas les modifier.
 
+**Node doit être installé pour tout le système**, à l'endroit indiqué par `ExecStart` dans l'unité
+(`/usr/bin/node` par défaut). Un Node installé avec nvm vit dans ton dossier personnel, auquel
+`bento-dash` n'a pas accès : copie-le dans un emplacement système et pointe l'unité dessus.
+
+```bash
+command -v node                                   # où est Node ?
+sudo install -m 0755 -o root -g root "$(command -v node)" /usr/local/bin/node
+sudo sed -i 's#^ExecStart=/usr/bin/node#ExecStart=/usr/local/bin/node#' /etc/systemd/system/bento-agent.service
+sudo -u bento-dash /usr/local/bin/node --version  # doit afficher une version, sans erreur
+```
+
+Cette copie ne suit pas les mises à jour de nvm : à refaire quand tu changes de version.
+
 `/etc/bento-agent/config.json` :
 
 | Champ | Rôle |
@@ -298,6 +311,7 @@ Résumé des protections en place.
 | « GitHub refuse la vérification » | Trop de requêtes depuis cette adresse : réessayer plus tard |
 | « Ce conteneur n'a pas de règle sudoers » | Ajouter sa ligne `docker logs --tail 200 <nom>` (voir plus haut) |
 | Pas de mise à jour en `npm run dev` | Normal : elles n'existent que dans l'application installée |
-| Téléphone : « Ce téléphone n'est pas autorisé » | `allowedLogin` ne correspond pas à ton identifiant Tailscale, ou la page n'est pas ouverte via `tailscale serve` |
+| `bento-agent` échoue avec `status=203/EXEC` | systemd ne trouve pas ou ne peut pas lancer Node : vérifier le chemin dans `ExecStart` et que `sudo -u bento-dash <chemin> --version` répond (un Node sous `/home` ou nvm ne convient pas) |
+| Téléphone : « Accès refusé » ou « Ce téléphone n'est pas autorisé » | `allowedLogin` ne correspond pas à l'identifiant exact vu par Tailscale : le lire avec `tailscale whois <adresse 100.x du téléphone>` (ligne `User:`), majuscules comprises |
 | Téléphone : les actions sont refusées, la lecture marche | `allowedOrigin` manque ou diffère de l'adresse affichée dans le navigateur |
 | Téléphone : « Bento est injoignable » | Tailscale connecté sur le téléphone ? `systemctl status bento-agent` et `tailscale serve status` sur bento |
