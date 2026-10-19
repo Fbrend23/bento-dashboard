@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { ServiceLevel, ServiceStatus } from '../src/shared/monitors'
 import type { AgentStatus } from '../src/shared/agent'
 import { summarize } from '../src/mobile/src/summary'
+import { metrics } from './helpers/status'
 
 const service = (id: string, level: ServiceLevel, detail = 'Up 2 days'): ServiceStatus => ({
   id,
@@ -17,7 +18,8 @@ const service = (id: string, level: ServiceLevel, detail = 'Up 2 days'): Service
 const status = (...services: ServiceStatus[]): AgentStatus => ({
   updatedAt: 1,
   services,
-  stackLabels: {}
+  stackLabels: {},
+  metrics: metrics()
 })
 
 describe('summarize', () => {

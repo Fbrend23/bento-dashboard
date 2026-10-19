@@ -1,7 +1,7 @@
 // What the bento agent serves to the phone (src/agent -> src/mobile). Read-only status plus the
 // result of the three container verbs; nothing here can name a command.
 
-import type { ServiceStatus } from './monitors'
+import type { Metrics, ServiceStatus } from './monitors'
 
 /** The two request headers the phone must send; the agent refuses a POST without them. */
 export const AGENT_HEADER = 'X-Bento-Agent'
@@ -17,6 +17,8 @@ export interface AgentStatus {
   services: ServiceStatus[]
   /** Display names by compose project, from the agent's own config. */
   stackLabels: Record<string, string>
+  /** Processor, memory, disks, uptime and load: read by the same snapshot as the services. */
+  metrics: Metrics
 }
 
 /** The body the phone sends: two strings, validated by the agent exactly as the desktop does. */

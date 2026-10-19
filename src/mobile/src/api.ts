@@ -38,7 +38,8 @@ function isAgentStatus(value: unknown): value is AgentStatus {
     isRecord(value) &&
     typeof value.updatedAt === 'number' &&
     Array.isArray(value.services) &&
-    isRecord(value.stackLabels)
+    isRecord(value.stackLabels) &&
+    isRecord(value.metrics)
   )
 }
 

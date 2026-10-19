@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AgentStatus } from '../src/shared/agent'
 import { createAgentServer } from '../src/agent/server'
 import type { AgentService } from '../src/agent/service'
+import { metrics } from './helpers/status'
 
 const LOGIN = 'owner@example.com'
 const ORIGIN = 'https://bento.example.ts.net'
@@ -24,7 +25,8 @@ const STATUS: AgentStatus = {
       ports: []
     }
   ],
-  stackLabels: { media: 'Médias' }
+  stackLabels: { media: 'Médias' },
+  metrics: metrics()
 }
 
 let service: AgentService

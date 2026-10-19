@@ -183,7 +183,8 @@ bento** et sert une page web installable (PWA). Il n'écoute que sur `127.0.0.1`
 
 L'agent exécute localement les mêmes commandes que l'application de bureau, avec la même liste
 blanche réduite à deux choses : le relevé d'état et démarrer, arrêter, redémarrer un conteneur. Pas
-de logs, pas de métriques, pas de notifications sur le téléphone. Il réutilise l'utilisateur
+de logs ni de notifications sur le téléphone ; les chiffres du système (processeur, mémoire,
+disques, disponibilité, charge) viennent du même relevé. Il réutilise l'utilisateur
 `bento-dash` et les règles sudoers de l'étape 2 : il n'y a rien à ajouter de ce côté-là.
 
 ### Installer l'agent

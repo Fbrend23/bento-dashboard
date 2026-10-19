@@ -3,8 +3,14 @@ import type { AgentStatus } from '../src/shared/agent'
 import type { ContainerActionResult } from '../src/shared/actions'
 import type { AgentApi, StatusResult } from '../src/mobile/src/api'
 import { REFRESH_INTERVAL_MS, useBento } from '../src/mobile/src/use-bento'
+import { metrics } from './helpers/status'
 
-const status = (updatedAt: number): AgentStatus => ({ updatedAt, services: [], stackLabels: {} })
+const status = (updatedAt: number): AgentStatus => ({
+  updatedAt,
+  services: [],
+  stackLabels: {},
+  metrics: metrics()
+})
 
 let api: AgentApi
 let getStatus: ReturnType<typeof vi.fn<() => Promise<StatusResult>>>

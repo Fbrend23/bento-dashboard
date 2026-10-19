@@ -44,6 +44,31 @@ describe('getStatus', () => {
     expect(status.services.at(-1)).toMatchObject({ id: 'tailscaled', kind: 'systemd' })
   })
 
+  it('sends the system figures read by the same snapshot', async () => {
+    const { metrics } = await service.getStatus()
+    expect(metrics.memoryUsedPercent).not.toBeNull()
+    expect(metrics.uptimeSeconds).not.toBeNull()
+    expect(metrics.load).not.toBeNull()
+    expect(metrics.disks.length).toBeGreaterThan(0)
+    // No earlier sample on the first read: the processor load is not known yet.
+    expect(metrics.cpuPercent).toBeNull()
+  })
+
+  it('keeps the processor sample between reads to compute its load', async () => {
+    await service.getStatus()
+    clock += 6000
+    run.mockResolvedValueOnce({
+      stdout: snapshotOutput({
+        stat: 'cpu  4754239 12576 1951953 266389789 405921 0 325091 0 0 0\n'
+      }),
+      stderr: '',
+      code: 0
+    })
+    const { metrics } = await service.getStatus()
+    // 1000 busy ticks and 500 idle ticks since the first read.
+    expect(metrics.cpuPercent).toBeCloseTo(66.7, 0)
+  })
+
   it('never sends published ports to the phone', async () => {
     const status = await service.getStatus()
     expect(status.services.every((s) => s.ports.length === 0)).toBe(true)

@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { AgentStatus } from '../src/shared/agent'
 import { createAgentApi } from '../src/mobile/src/api'
+import { metrics } from './helpers/status'
 
-const STATUS: AgentStatus = { updatedAt: 1, services: [], stackLabels: {} }
+const STATUS: AgentStatus = { updatedAt: 1, services: [], stackLabels: {}, metrics: metrics() }
 
 const reply = (status: number, body: unknown): Response =>
   new Response(typeof body === 'string' ? body : JSON.stringify(body), { status })
@@ -51,7 +52,8 @@ describe('getStatus', () => {
       '{}',
       '[]',
       'null',
-      { updatedAt: 'x', services: [], stackLabels: {} }
+      { updatedAt: 'x', services: [], stackLabels: {}, metrics: metrics() },
+      { updatedAt: 1, services: [], stackLabels: {} }
     ]) {
       const result = await apiWith(vi.fn().mockResolvedValue(reply(200, body))).getStatus()
       expect(result).toEqual({ ok: false, error: "Réponse inattendue de l'agent." })

@@ -1,5 +1,6 @@
 import type { AgentStatus } from '@shared/agent'
 import type { ContainerActionResult } from '@shared/actions'
+import type { CpuSample, NetSample } from '@shared/monitors'
 import { DEFAULT_SETTINGS, type Settings } from '@shared/settings'
 import { runContainerAction } from '../main/actions/container-action'
 import { describeExecError } from '../main/monitors/logs'
@@ -50,6 +51,9 @@ export function createAgentService(deps: AgentServiceDeps): AgentService {
     hiddenContainers: deps.hiddenContainers
   }
   const memory = createRunningMemory()
+  // The baselines the next read measures cpu and network rates against.
+  let cpuSample: CpuSample | null = null
+  let netSample: NetSample | null = null
 
   let cache: { status: AgentStatus; at: number } | null = null
   let inflight: Promise<AgentStatus> | null = null
@@ -58,7 +62,9 @@ export function createAgentService(deps: AgentServiceDeps): AgentService {
 
   async function read(): Promise<AgentStatus> {
     const result = await exec(SNAPSHOT_COMMAND)
-    const snapshot = buildSnapshot(result.stdout, settings, null, memory.names())
+    const snapshot = buildSnapshot(result.stdout, settings, cpuSample, memory.names(), netSample)
+    cpuSample = snapshot.cpuSample
+    netSample = snapshot.netSample
     // An unreadable docker leaves the memory and the known names untouched.
     if (snapshot.docker) {
       memory.observe(snapshot.docker)
@@ -68,7 +74,8 @@ export function createAgentService(deps: AgentServiceDeps): AgentService {
     const status: AgentStatus = {
       updatedAt: at,
       services: snapshot.services.map((service) => ({ ...service, ports: [] })),
-      stackLabels: settings.stackLabels
+      stackLabels: settings.stackLabels,
+      metrics: snapshot.metrics
     }
     cache = { status, at }
     return status
