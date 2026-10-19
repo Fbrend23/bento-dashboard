@@ -59,7 +59,14 @@ export function authorize(request: AuthRequest, options: AuthOptions): AuthResul
   const site = single(headers, 'sec-fetch-site')
   if (request.method !== 'POST') {
     // Absent on old browsers and tools: the login check above is the barrier for reads.
-    return site === undefined || site === 'same-origin' || site === 'none' ? { ok: true } : DENIED
+    if (site === undefined || site === 'same-origin' || site === 'none') return { ok: true }
+    // Opening the page from a link or another app is a navigation from "another site". It is
+    // harmless: the opener cannot read what a navigation loads, and the page itself talks to
+    // the agent from its own origin.
+    const navigation =
+      single(headers, 'sec-fetch-mode') === 'navigate' &&
+      single(headers, 'sec-fetch-dest') === 'document'
+    return navigation ? { ok: true } : DENIED
   }
 
   if (site !== 'same-origin') return DENIED

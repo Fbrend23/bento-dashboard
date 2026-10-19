@@ -64,6 +64,54 @@ describe('authorize: cross-site reads', () => {
   })
 })
 
+describe('authorize: opening the page from elsewhere', () => {
+  it('allows a top-level navigation whatever the origin (a link, a shortcut, another app)', () => {
+    for (const site of ['cross-site', 'same-site', 'same-origin', 'none']) {
+      const request = get({
+        'sec-fetch-site': site,
+        'sec-fetch-mode': 'navigate',
+        'sec-fetch-dest': 'document'
+      })
+      expect(authorize(request, options)).toEqual({ ok: true })
+    }
+  })
+
+  it('still needs the login for a navigation', () => {
+    const request = get({
+      'tailscale-user-login': 'someone@example.com',
+      'sec-fetch-site': 'cross-site',
+      'sec-fetch-mode': 'navigate',
+      'sec-fetch-dest': 'document'
+    })
+    expect(authorize(request, options)).toEqual({ ok: false, status: 403 })
+  })
+
+  it('does not extend to subresources, scripts or fetches from another site', () => {
+    for (const [mode, dest] of [
+      ['no-cors', 'image'],
+      ['cors', 'empty'],
+      ['no-cors', 'script'],
+      ['navigate', 'iframe']
+    ]) {
+      const request = get({
+        'sec-fetch-site': 'cross-site',
+        'sec-fetch-mode': mode,
+        'sec-fetch-dest': dest
+      })
+      expect(authorize(request, options)).toEqual({ ok: false, status: 403 })
+    }
+  })
+
+  it('never lets a navigation through for an action', () => {
+    const request = post({
+      'sec-fetch-site': 'cross-site',
+      'sec-fetch-mode': 'navigate',
+      'sec-fetch-dest': 'document'
+    })
+    expect(authorize(request, options)).toEqual({ ok: false, status: 403 })
+  })
+})
+
 describe('authorize: actions (POST)', () => {
   it('accepts a same-origin JSON request carrying the custom header', () => {
     expect(authorize(post(), options)).toEqual({ ok: true })
