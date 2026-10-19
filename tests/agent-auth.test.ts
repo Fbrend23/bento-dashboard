@@ -76,6 +76,15 @@ describe('authorize: opening the page from elsewhere', () => {
     }
   })
 
+  it('allows the same navigation relayed by the service worker (mode becomes same-origin)', () => {
+    const request = get({
+      'sec-fetch-site': 'cross-site',
+      'sec-fetch-mode': 'same-origin',
+      'sec-fetch-dest': 'document'
+    })
+    expect(authorize(request, options)).toEqual({ ok: true })
+  })
+
   it('still needs the login for a navigation', () => {
     const request = get({
       'tailscale-user-login': 'someone@example.com',
