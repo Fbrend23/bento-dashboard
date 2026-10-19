@@ -28,7 +28,8 @@
     "release:win": "npm run build:win && node scripts/publish-release.mjs",
     "build:agent": "vite build -c vite.agent.config.ts",
     "build:mobile": "vue-tsc --noEmit -p tsconfig.web.json --composite false && vite build -c vite.mobile.config.ts",
-    "package:agent": "node scripts/package-agent.mjs"
+    "package:agent": "node scripts/package-agent.mjs",
+    "deploy:agent": "node scripts/deploy-agent.mjs"
   },
   "dependencies": {
     "@electron-toolkit/utils": "^4.0.0",
