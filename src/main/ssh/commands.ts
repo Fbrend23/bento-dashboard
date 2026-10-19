@@ -36,6 +36,11 @@ const CONTAINER_ACTION_COMMAND = new RegExp(
     `(?:start|stop|restart) ${CONTAINER_NAME.source.slice(1, -1)}$`
 )
 
+/** True for exactly the output of `containerActionCommand`, nothing before or after. */
+export function isContainerActionCommand(command: string): boolean {
+  return typeof command === 'string' && CONTAINER_ACTION_COMMAND.test(command)
+}
+
 /** 200 last lines of the tailscaled journal (an exact sudoers rule on bento). */
 export const TAILSCALED_LOG_COMMAND =
   'timeout 10 sudo -n journalctl -u tailscaled -n 200 --no-pager -o short-iso'
