@@ -223,6 +223,22 @@ sudo -u bento-dash /usr/local/bin/node --version  # doit afficher une version, s
 
 Cette copie ne suit pas les mises à jour de nvm : à refaire quand tu changes de version.
 
+### Mettre à jour l'agent
+
+Une fois l'agent installé, depuis le poste de développement :
+
+```bash
+npm run deploy:agent                  # hôte ssh « bento » par défaut
+npm run deploy:agent -- <alias-ssh>   # ou BENTO_DEPLOY_HOST=<alias-ssh>
+```
+
+Le script empaquette l'agent, le copie par `scp` dans un dossier temporaire de bento, remplace
+`/opt/bento-agent/bento-agent.cjs` et `/opt/bento-agent/public`, redémarre le service et vérifie
+qu'il répond 403 sans identité Tailscale. Il ne touche ni à `/etc/bento-agent/config.json` ni à
+l'unité systemd installée (qui garde ton chemin vers Node) : si l'unité du paquet a changé, il
+l'indique et tu la reportes à la main. Le compte ssh doit pouvoir faire `sudo` (le mot de passe
+est demandé dans le terminal si besoin). La première installation reste celle ci-dessus.
+
 `/etc/bento-agent/config.json` :
 
 | Champ | Rôle |
