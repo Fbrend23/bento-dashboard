@@ -1,0 +1,8 @@
+{
+  "allowedLogin": "toi@example.com",
+  "allowedOrigin": "https://bento.ton-tailnet.ts.net",
+  "port": 8484,
+  "containerLabels": { "jellyfin": "Jellyfin" },
+  "stackLabels": { "media": "Médias" },
+  "hiddenContainers": []
+}

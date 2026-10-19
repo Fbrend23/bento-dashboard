@@ -25,7 +25,10 @@
     "postinstall": "install-electron && electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win --publish never",
-    "release:win": "npm run build:win && node scripts/publish-release.mjs"
+    "release:win": "npm run build:win && node scripts/publish-release.mjs",
+    "build:agent": "vite build -c vite.agent.config.ts",
+    "build:mobile": "vue-tsc --noEmit -p tsconfig.web.json --composite false && vite build -c vite.mobile.config.ts",
+    "package:agent": "node scripts/package-agent.mjs"
   },
   "dependencies": {
     "@electron-toolkit/utils": "^4.0.0",

@@ -18,3 +18,7 @@ id_*
 # Claude Code worktrees
 .claude/worktrees/
 SECURITY.md
+
+# Mobile agent builds
+dist-agent
+dist-mobile

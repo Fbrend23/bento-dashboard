@@ -26,6 +26,7 @@ serveur toutes les 30 secondes et reste dans la barre système.
 | F6 | Démarrer, arrêter ou redémarrer un conteneur, avec confirmation pour arrêter et redémarrer |
 | F7 | 200 dernières lignes de logs des conteneurs choisis dans les réglages et de Tailscale |
 | F8 | Réglages : hôte, empreinte du serveur, intervalle, seuils, lancement au démarrage |
+| F9 | Sur téléphone (facultatif) : état des conteneurs par stack, démarrer, arrêter ou redémarrer, depuis une page installable (voir « Version mobile ») |
 
 Hors périmètre : terminal intégré, administration complète, accès hors Tailscale, plusieurs serveurs.
 
@@ -174,6 +175,66 @@ tentent de créer la release, ce qui échoue (`already_exists`) une fois sur deu
 
 `npm run build:win` construit l'installeur dans `dist/` sans rien publier.
 
+## Version mobile (facultatif)
+
+Pour vérifier bento et redémarrer un conteneur depuis un téléphone, un petit agent tourne **sur
+bento** et sert une page web installable (PWA). Il n'écoute que sur `127.0.0.1` : seul
+`tailscale serve` l'expose, sur le tailnet, en HTTPS. Rien n'est stocké sur le téléphone, aucune clé.
+
+L'agent exécute localement les mêmes commandes que l'application de bureau, avec la même liste
+blanche réduite à deux choses : le relevé d'état et démarrer, arrêter, redémarrer un conteneur. Pas
+de logs, pas de métriques, pas de notifications sur le téléphone. Il réutilise l'utilisateur
+`bento-dash` et les règles sudoers de l'étape 2 : il n'y a rien à ajouter de ce côté-là.
+
+### Installer l'agent
+
+Sur le poste de développement :
+
+```bash
+npm run package:agent   # dist-agent/package/bento-agent-<version>.tar.gz
+```
+
+Sur bento (Node 20 ou plus requis : `node --version`) :
+
+```bash
+sudo mkdir -p /opt/bento-agent /etc/bento-agent
+sudo tar -xzf bento-agent-<version>.tar.gz --strip-components=1 -C /opt/bento-agent
+sudo mv /opt/bento-agent/config.example.json /etc/bento-agent/config.json
+sudo nano /etc/bento-agent/config.json          # voir ci-dessous
+sudo cp /opt/bento-agent/bento-agent.service /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable --now bento-agent
+sudo tailscale serve --bg --https=443 http://127.0.0.1:8484
+```
+
+Les fichiers de `/opt/bento-agent` appartiennent à root : l'agent, qui tourne sous `bento-dash`, ne
+peut pas les modifier.
+
+`/etc/bento-agent/config.json` :
+
+| Champ | Rôle |
+| --- | --- |
+| `allowedLogin` | **Obligatoire.** Ton identifiant Tailscale (celui affiché dans l'application Tailscale). Toute autre personne reçoit 403. |
+| `allowedOrigin` | Adresse HTTPS de la page, par exemple `https://bento.<ton-tailnet>.ts.net`. À renseigner si `tailscale serve` ne transmet pas le nom d'hôte d'origine ; sinon il est déduit de l'en-tête `Host`. |
+| `port` | Port local, 8484 par défaut. Doit être le même que dans la commande `tailscale serve`. |
+| `containerLabels`, `stackLabels` | Noms affichés, comme dans Réglages, Conteneurs. |
+| `hiddenContainers` | Conteneurs à ne pas afficher. |
+
+L'unité systemd n'active **pas** `NoNewPrivileges` : toutes les commandes passent par `sudo -n`, qui
+cesserait de fonctionner sans message clair.
+
+Prérequis Tailscale : MagicDNS et les certificats HTTPS doivent être activés pour le tailnet (console
+d'administration, DNS). Sans HTTPS, la page s'affiche mais ne peut pas s'installer.
+
+### Sur le téléphone
+
+Avec l'application Tailscale connectée, ouvrir `https://bento.<ton-tailnet>.ts.net/` dans Chrome,
+puis menu ⋮ → « Ajouter à l'écran d'accueil ». La page lit bento quand elle est ouverte (toutes les
+30 secondes) et ne lit rien quand elle est en arrière-plan.
+
+Arrêter et redémarrer demandent une confirmation dans la page ; démarrer non, comme sur le bureau.
+Un arrêt ou un redémarrage lancé depuis le téléphone fait aussi apparaître la notification « service
+tombé » sur le PC, qui ne sait pas que c'était voulu.
+
 ## Développement
 
 ```bash
@@ -184,6 +245,9 @@ npm run lint
 npm run typecheck
 npm run build      # build de production
 npm run build:win  # installeur Windows (dist/)
+npm run build:agent    # agent de bento en un seul fichier (dist-agent/)
+npm run build:mobile   # page du téléphone (dist-mobile/)
+npm run package:agent  # archive prête à copier sur bento
 ```
 
 Le développement se fait test d'abord. Les moniteurs sont une commande fixe plus une fonction de
@@ -199,6 +263,8 @@ src/
 │   └── …
 ├── preload/       contextBridge : window.bento, API minimale et typée
 ├── renderer/      Vue 3 + Pinia, aucune API Node
+├── agent/         agent de bento (version mobile) : session locale, serveur HTTP, authentification
+├── mobile/        page du téléphone, Vue 3
 └── shared/        types et fonctions pures partagés
 ```
 
@@ -215,6 +281,10 @@ Résumé des protections en place.
   principal.
 - Les journaux d'un conteneur ne se lisent que s'il est choisi dans les réglages, présent dans le
   dernier relevé, et couvert par sa propre règle sudoers sur bento.
+- Agent mobile : il n'écoute que sur `127.0.0.1` et chaque requête doit porter l'identité Tailscale
+  autorisée (`allowedLogin`), sinon 403. Une action n'est acceptée que depuis sa propre page (pas de
+  CORS, JSON seulement, en-tête `X-Bento-Agent`, `Origin` et `Sec-Fetch-Site` vérifiés), avec un
+  corps de 1 Ko au plus : deux textes, validés comme sur le bureau.
 - Aucun secret : l'application n'en stocke aucun, la clé SSH reste dans l'agent Windows.
 - Le dépôt est public : aucune adresse, clé, nom de machine ou de conteneur réel n'y figure.
 
@@ -228,3 +298,6 @@ Résumé des protections en place.
 | « GitHub refuse la vérification » | Trop de requêtes depuis cette adresse : réessayer plus tard |
 | « Ce conteneur n'a pas de règle sudoers » | Ajouter sa ligne `docker logs --tail 200 <nom>` (voir plus haut) |
 | Pas de mise à jour en `npm run dev` | Normal : elles n'existent que dans l'application installée |
+| Téléphone : « Ce téléphone n'est pas autorisé » | `allowedLogin` ne correspond pas à ton identifiant Tailscale, ou la page n'est pas ouverte via `tailscale serve` |
+| Téléphone : les actions sont refusées, la lecture marche | `allowedOrigin` manque ou diffère de l'adresse affichée dans le navigateur |
+| Téléphone : « Bento est injoignable » | Tailscale connecté sur le téléphone ? `systemctl status bento-agent` et `tailscale serve status` sur bento |

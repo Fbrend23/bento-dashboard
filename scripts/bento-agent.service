@@ -1,0 +1,25 @@
+[Unit]
+Description=Bento agent (page du téléphone et actions sur les conteneurs)
+After=network-online.target docker.service
+
+[Service]
+Type=simple
+User=bento-dash
+Environment=BENTO_AGENT_CONFIG=/etc/bento-agent/config.json
+Environment=BENTO_AGENT_STATIC=/opt/bento-agent/public
+ExecStart=/usr/bin/node /opt/bento-agent/bento-agent.cjs
+Restart=on-failure
+RestartSec=5
+
+# Durcissement. Chaque commande passe par `sudo -n` (règles sudoers exactes) : NE PAS ajouter
+# NoNewPrivileges, RestrictSUIDSGID, CapabilityBoundingSet ni ProtectSystem=strict, qui casseraient
+# sudo sans message clair.
+ProtectHome=true
+ProtectSystem=full
+PrivateTmp=true
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+
+[Install]
+WantedBy=multi-user.target
