@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { confirmationText } from '../src/main/actions/confirm-text'
+import { confirmationText } from '../src/shared/confirm-text'
 
 describe('confirmationText', () => {
   it('names the container and the action when stopping', () => {
