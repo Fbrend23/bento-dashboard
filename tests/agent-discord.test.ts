@@ -39,6 +39,44 @@ describe('toDiscordPayload', () => {
     expect(toDiscordPayload(down).content).toBeUndefined()
   })
 
+  it('replaces a relative duration by the time of the event, shown in the reader time zone', () => {
+    const at = Date.UTC(2026, 9, 20, 13, 5, 7)
+    const unix = Math.floor(at / 1000)
+    const stopped = toDiscordPayload(
+      { id: 'down:app-1', title: 'App est arrêtée', body: 'Arrêté (code 1) il y a 3 secondes.' },
+      undefined,
+      at
+    )
+    expect(stopped.embeds[0].description).toBe(`Arrêté (code 1) à <t:${unix}:T>.`)
+    const looping = toDiscordPayload(
+      {
+        id: 'down:app-1',
+        title: 'x',
+        body: 'Redémarre en boucle (code 2) il y a environ 1 minute.'
+      },
+      undefined,
+      at
+    )
+    expect(looping.embeds[0].description).toBe(`Redémarre en boucle (code 2) à <t:${unix}:T>.`)
+    const back = toDiscordPayload(
+      { id: 'up:app-1', title: 'x', body: 'Actif depuis 4 secondes, sain.' },
+      undefined,
+      at
+    )
+    expect(back.embeds[0].description).toBe(`Revenu à <t:${unix}:T>, sain.`)
+  })
+
+  it('always carries the event time in the embed timestamp', () => {
+    const at = Date.UTC(2026, 9, 20, 13, 5, 7)
+    const payload = toDiscordPayload(
+      { id: 'down:tailscaled.service', title: 'x', body: 'inactif (arrêté).' },
+      undefined,
+      at
+    )
+    expect(payload.embeds[0].timestamp).toBe('2026-10-20T13:05:07.000Z')
+    expect(payload.embeds[0].description).toBe('inactif (arrêté).')
+  })
+
   it('escapes Markdown and truncates long text', () => {
     const payload = toDiscordPayload({
       id: 'down:x',
@@ -76,6 +114,19 @@ describe('createDiscordSender', () => {
     await sender.send(down)
     const body = JSON.parse((fetch.mock.calls[0] as [string, RequestInit])[1].body as string)
     expect(body).toMatchObject({ content: '<@123456789012345678>' })
+  })
+
+  it('stamps a message with the time it was handed over, not the time it was delivered', async () => {
+    const fetch = vi.fn().mockResolvedValue(ok())
+    const sender = createDiscordSender({
+      url: URL,
+      fetch,
+      log: vi.fn(),
+      now: () => 1_800_000_000_000
+    })
+    await sender.send(down)
+    const body = JSON.parse((fetch.mock.calls[0] as [string, RequestInit])[1].body as string)
+    expect(body.embeds[0].timestamp).toBe(new Date(1_800_000_000_000).toISOString())
   })
 
   it('sends messages one after the other, in order', async () => {

@@ -11,7 +11,7 @@ export interface DiscordPayload {
   username: string
   /** The ping of the configured user, on a problem only. */
   content?: string
-  embeds: { title: string; description: string; color: number }[]
+  embeds: { title: string; description: string; color: number; timestamp: string }[]
   /** Nobody can be pinged but the configured user: a container name never pings anyone. */
   allowed_mentions: { parse: never[]; users?: string[] }
 }
@@ -21,9 +21,22 @@ const escapeMarkdown = (text: string): string => text.replace(/([\\*_`~|>])/g, '
 const truncate = (text: string, max: number): string =>
   text.length <= max ? text : `${text.slice(0, max - 1)}…`
 
+/**
+ * Docker words the age of the state relative to the moment it was read ("il y a 3 secondes"), which
+ * means nothing once the message is read later. The time of the event replaces it; Discord shows
+ * `<t:…:T>` in the time zone of whoever reads.
+ */
+function withClockTime(text: string, at: number): string {
+  const clock = `<t:${Math.floor(at / 1000)}:T>`
+  return text
+    .replace(/ il y a [^,.]+/, ` à ${clock}`)
+    .replace(/^Actif depuis [^,.]+/, `Revenu à ${clock}`)
+}
+
 export function toDiscordPayload(
   notification: AppNotification,
-  mentionUserId?: string
+  mentionUserId?: string,
+  at: number = Date.now()
 ): DiscordPayload {
   const ping = mentionUserId !== undefined && !notification.id.startsWith('up:')
   return {
@@ -32,8 +45,12 @@ export function toDiscordPayload(
     embeds: [
       {
         title: truncate(escapeMarkdown(notification.title), TITLE_MAX),
-        description: truncate(escapeMarkdown(notification.body), DESCRIPTION_MAX),
-        color: notification.id.startsWith('up:') ? GREEN : RED
+        description: truncate(
+          withClockTime(escapeMarkdown(notification.body), at),
+          DESCRIPTION_MAX
+        ),
+        color: notification.id.startsWith('up:') ? GREEN : RED,
+        timestamp: new Date(at).toISOString()
       }
     ],
     allowed_mentions: ping ? { parse: [], users: [mentionUserId] } : { parse: [] }
@@ -51,6 +68,7 @@ export interface DiscordSenderDeps {
   /** Numeric id of the user to ping on a problem. */
   mentionUserId?: string
   fetch?: typeof fetch
+  now?: () => number
   log?: (line: string) => void
   sleep?: (ms: number) => Promise<void>
 }
@@ -71,6 +89,7 @@ export function createDiscordSender(deps: DiscordSenderDeps): DiscordSender {
   const doFetch = deps.fetch ?? fetch
   const log = deps.log ?? (() => {})
   const sleep = deps.sleep ?? wait
+  const now = deps.now ?? Date.now
   let queue: Promise<void> = Promise.resolve()
 
   const post = (payload: DiscordPayload): Promise<Response> =>
@@ -81,8 +100,8 @@ export function createDiscordSender(deps: DiscordSenderDeps): DiscordSender {
       signal: AbortSignal.timeout(TIMEOUT_MS)
     })
 
-  async function deliver(notification: AppNotification): Promise<void> {
-    const payload = toDiscordPayload(notification, deps.mentionUserId)
+  async function deliver(notification: AppNotification, at: number): Promise<void> {
+    const payload = toDiscordPayload(notification, deps.mentionUserId, at)
     try {
       let response = await post(payload)
       if (response.status === 429) {
@@ -98,7 +117,9 @@ export function createDiscordSender(deps: DiscordSenderDeps): DiscordSender {
 
   return {
     send(notification) {
-      queue = queue.then(() => deliver(notification))
+      // The time is the one of the event, taken now: the queue may delay the delivery.
+      const at = now()
+      queue = queue.then(() => deliver(notification, at))
       return queue
     }
   }
