@@ -40,6 +40,7 @@ interface FakeBento extends BentoApi {
   getUpdateState: Mock
   onUpdate: Mock
   checkForUpdate: Mock
+  downloadUpdate: Mock
   installUpdate: Mock
   pushUpdate(state: UpdateState): void
   push(status: BentoStatus): void
@@ -72,6 +73,7 @@ function installBento(): FakeBento {
       return unsubscribe
     }),
     checkForUpdate: vi.fn().mockResolvedValue(undefined),
+    downloadUpdate: vi.fn().mockResolvedValue(undefined),
     installUpdate: vi.fn().mockResolvedValue(undefined),
     pushUpdate: (s: UpdateState) => updateListener?.(s),
     push: (s: BentoStatus) => listener?.(s),
@@ -440,11 +442,13 @@ describe('updates store', () => {
     expect(bento.unsubscribe).toHaveBeenCalledOnce()
   })
 
-  it('checks and installs through the main process', async () => {
+  it('checks, downloads and installs through the main process', async () => {
     const store = useUpdatesStore()
     await store.check()
+    await store.download()
     await store.install()
     expect(bento.checkForUpdate).toHaveBeenCalledOnce()
+    expect(bento.downloadUpdate).toHaveBeenCalledOnce()
     expect(bento.installUpdate).toHaveBeenCalledOnce()
   })
 })

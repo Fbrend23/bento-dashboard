@@ -21,6 +21,7 @@ export function createElectronUpdater(): UpdaterLike {
       autoUpdater.autoInstallOnAppQuit = value
     },
     checkForUpdates: () => autoUpdater.checkForUpdates(),
+    downloadUpdate: () => autoUpdater.downloadUpdate(),
     // Silent install, then relaunch the app.
     quitAndInstall: () => autoUpdater.quitAndInstall(true, true),
     on: (event, listener) => {

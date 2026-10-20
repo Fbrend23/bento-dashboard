@@ -28,6 +28,7 @@ export const IPC_CHANNELS = {
   openContainerPort: 'action:open-container-port',
   getUpdateState: 'update:get',
   checkUpdate: 'update:check',
+  downloadUpdate: 'update:download',
   installUpdate: 'update:install',
   /** Pushed from main to the renderer each time the update state changes. */
   updateChanged: 'update:changed'
@@ -83,6 +84,8 @@ export interface BentoApi {
   /** Returns the function that stops the subscription. */
   onUpdate(listener: (state: UpdateState) => void): () => void
   checkForUpdate(): Promise<void>
+  /** Downloads the offered version (the user's consent); a no-op unless one is available. */
+  downloadUpdate(): Promise<void>
   /** Restarts on the downloaded version; a no-op unless one is ready. */
   installUpdate(): Promise<void>
 }

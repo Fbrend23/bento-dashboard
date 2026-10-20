@@ -11,6 +11,8 @@ export function updateSummary(state: UpdateState): string {
       return 'Vérification en cours…'
     case 'up-to-date':
       return `Version ${state.currentVersion} : vous avez la dernière version.`
+    case 'available':
+      return `La version ${state.version} est disponible. Téléchargez-la pour l'installer.`
     case 'downloading':
       return state.percent === null
         ? `Téléchargement de la version ${state.version}…`

@@ -5,6 +5,7 @@ export interface UpdaterLike {
   autoDownload: boolean
   autoInstallOnAppQuit: boolean
   checkForUpdates(): Promise<unknown>
+  downloadUpdate(): Promise<unknown>
   quitAndInstall(): void
   on(event: string, listener: (...args: unknown[]) => void): void
 }
@@ -42,9 +43,9 @@ function describeUpdateError(error: unknown): string {
 }
 
 /**
- * Checks GitHub Releases for a new version, downloads it quietly and leaves the installation to
- * the user (or to the next quit). A failing check is a normal state: it is reported, never retried
- * in a loop.
+ * Checks GitHub Releases for a new version and only offers it: the download starts when the user
+ * agrees, and the installation is left to them (or to the next quit). A failing check is a normal
+ * state: it is reported, never retried in a loop.
  */
 export class UpdateController {
   private current: UpdateState
@@ -65,14 +66,15 @@ export class UpdateController {
     }
 
     const { updater } = deps
-    // Download in the background; installing is the user's choice (button) or happens on quit.
-    updater.autoDownload = true
+    // Nothing is downloaded without the user's consent (download()); a version they chose to
+    // download is installed by their button or, failing that, on quit.
+    updater.autoDownload = false
     updater.autoInstallOnAppQuit = true
     updater.on('update-available', (info) =>
       this.set({
-        phase: 'downloading',
+        phase: 'available',
         version: (info as { version: string }).version,
-        percent: 0,
+        percent: null,
         error: null
       })
     )
@@ -131,6 +133,17 @@ export class UpdateController {
     return run
   }
 
+  /** Starts the download of the offered version. Only possible once the user is asked (`available`). */
+  async download(): Promise<void> {
+    if (this.current.phase !== 'available') return
+    this.set({ phase: 'downloading', percent: 0, error: null })
+    try {
+      await this.deps.updater.downloadUpdate()
+    } catch (error) {
+      this.fail(error)
+    }
+  }
+
   /** Restarts the app on the downloaded version. Only possible once the download is complete. */
   install(): void {
     if (this.current.phase === 'ready') this.deps.updater.quitAndInstall()
@@ -142,7 +155,7 @@ export class UpdateController {
       return
     }
     const { phase } = this.current
-    if (phase === 'ready' || phase === 'downloading') return
+    if (phase === 'ready' || phase === 'downloading' || phase === 'available') return
 
     this.set({ phase: 'checking', error: null })
     try {

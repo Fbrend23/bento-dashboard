@@ -43,6 +43,8 @@ export function buildBentoApi(invoke: Invoke, subscribe: Subscribe): BentoApi {
       subscribe(IPC_CHANNELS.updateChanged, (payload) => listener(payload as UpdateState)),
     checkForUpdate: () =>
       invoke(IPC_CHANNELS.checkUpdate) as ReturnType<BentoApi['checkForUpdate']>,
+    downloadUpdate: () =>
+      invoke(IPC_CHANNELS.downloadUpdate) as ReturnType<BentoApi['downloadUpdate']>,
     installUpdate: () => invoke(IPC_CHANNELS.installUpdate) as ReturnType<BentoApi['installUpdate']>
   }
 }

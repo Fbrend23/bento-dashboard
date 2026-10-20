@@ -14,6 +14,7 @@ const canCheck = computed(() => {
     phase !== undefined &&
     phase !== 'unavailable' &&
     phase !== 'checking' &&
+    phase !== 'available' &&
     phase !== 'downloading'
   )
 })
@@ -30,6 +31,22 @@ const canCheck = computed(() => {
     <p class="summary" role="status">{{ summary }}</p>
 
     <div class="buttons">
+      <button
+        v-if="state?.phase === 'available'"
+        type="button"
+        class="button primary"
+        @click="store.download()"
+      >
+        Télécharger
+      </button>
+      <button
+        v-else-if="state?.phase === 'ready'"
+        type="button"
+        class="button primary"
+        @click="store.install()"
+      >
+        Redémarrer pour installer
+      </button>
       <button type="button" class="button" :disabled="!canCheck" @click="store.check()">
         Vérifier maintenant
       </button>

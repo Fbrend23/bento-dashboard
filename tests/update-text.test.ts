@@ -22,6 +22,10 @@ describe('updateSummary', () => {
     [{ phase: 'checking' }, 'Vérification en cours…'],
     [{ phase: 'up-to-date' }, 'Version 1.0.0 : vous avez la dernière version.'],
     [
+      { phase: 'available', version: '1.1.0' },
+      "La version 1.1.0 est disponible. Téléchargez-la pour l'installer."
+    ],
+    [
       { phase: 'downloading', version: '1.1.0', percent: 42 },
       'Téléchargement de la version 1.1.0 : 42 %.'
     ],

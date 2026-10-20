@@ -9,6 +9,7 @@ import { useStatusStore } from './stores/status'
 import { useUpdatesStore } from './stores/updates'
 import { formatAge } from '@shared/format'
 import { staleness } from '@shared/staleness'
+import { updateSummary } from '@shared/update-text'
 import { viewForShortcut } from '@shared/shortcuts'
 import { buildVerdict } from '@shared/verdict'
 import BentoMark from './components/BentoMark.vue'
@@ -131,7 +132,18 @@ onBeforeUnmount(() => {
       </div>
     </header>
 
-    <div v-if="updateState?.phase === 'ready'" class="update-bar" role="status">
+    <div v-if="updateState?.phase === 'available'" class="update-bar" role="status">
+      <span>La version {{ updateState.version }} est disponible.</span>
+      <button type="button" class="button primary small" @click="updatesStore.download()">
+        Télécharger
+      </button>
+    </div>
+
+    <div v-else-if="updateState?.phase === 'downloading'" class="update-bar" role="status">
+      <span>{{ updateSummary(updateState) }}</span>
+    </div>
+
+    <div v-else-if="updateState?.phase === 'ready'" class="update-bar" role="status">
       <span>La version {{ updateState.version }} est prête.</span>
       <button type="button" class="button primary small" @click="updatesStore.install()">
         Redémarrer pour installer

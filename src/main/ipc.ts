@@ -42,6 +42,7 @@ interface IpcService {
 export interface IpcUpdates {
   readonly state: UpdateState
   check(): Promise<void>
+  download(): Promise<void>
   install(): void
 }
 
@@ -81,6 +82,7 @@ export function createHandlers(
     },
     [IPC_CHANNELS.getUpdateState]: () => updates.state,
     [IPC_CHANNELS.checkUpdate]: () => updates.check(),
+    [IPC_CHANNELS.downloadUpdate]: () => updates.download(),
     [IPC_CHANNELS.installUpdate]: () => updates.install()
   }
 }

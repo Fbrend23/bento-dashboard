@@ -8,6 +8,7 @@ import { buildBentoApi } from '../src/preload/api'
 const fakeUpdates = (): Parameters<typeof createHandlers>[2] => ({
   state: { phase: 'idle', currentVersion: '1.0.0' } as never,
   check: vi.fn().mockResolvedValue(undefined),
+  download: vi.fn().mockResolvedValue(undefined),
   install: vi.fn()
 })
 
@@ -58,6 +59,7 @@ describe('createHandlers', () => {
         IPC_CHANNELS.openContainerPort,
         IPC_CHANNELS.getUpdateState,
         IPC_CHANNELS.checkUpdate,
+        IPC_CHANNELS.downloadUpdate,
         IPC_CHANNELS.installUpdate
       ].sort()
     )
@@ -206,11 +208,13 @@ describe('createHandlers updates', () => {
     expect(handlers[IPC_CHANNELS.getUpdateState]()).toBe(updates.state)
   })
 
-  it('check and install take no argument from the renderer', async () => {
+  it('check, download and install take no argument from the renderer', async () => {
     const { handlers, updates } = setup()
     await handlers[IPC_CHANNELS.checkUpdate]('x')
+    await handlers[IPC_CHANNELS.downloadUpdate]('x')
     handlers[IPC_CHANNELS.installUpdate]('x')
     expect(updates.check).toHaveBeenCalledExactlyOnceWith()
+    expect(updates.download).toHaveBeenCalledExactlyOnceWith()
     expect(updates.install).toHaveBeenCalledExactlyOnceWith()
   })
 })
@@ -230,6 +234,7 @@ describe('buildBentoApi', () => {
     expect(Object.keys(setup().api).sort()).toEqual([
       'checkForUpdate',
       'containerAction',
+      'downloadUpdate',
       'exportLogs',
       'forgetContainer',
       'getAppInfo',
@@ -256,6 +261,7 @@ describe('buildBentoApi', () => {
     ['getSettings', IPC_CHANNELS.getSettings],
     ['getUpdateState', IPC_CHANNELS.getUpdateState],
     ['checkForUpdate', IPC_CHANNELS.checkUpdate],
+    ['downloadUpdate', IPC_CHANNELS.downloadUpdate],
     ['installUpdate', IPC_CHANNELS.installUpdate]
   ] as const)('%s invokes its channel without arguments', async (method, channel) => {
     const { api, invoke } = setup()

@@ -170,12 +170,13 @@ Utiliser bien le `ssh-add` de `C:\Windows\System32\OpenSSH` : celui de Git pour 
 agent, que l'application n'utilise pas. Ensuite, dans **Réglages** : hôte (nom Tailscale de bento),
 utilisateur `bento-dash`, empreinte du serveur, puis Enregistrer.
 
-## Mises à jour automatiques
+## Mises à jour
 
 Le dépôt est public : l'application lit les releases GitHub sans aucun identifiant, il n'y a rien
-à configurer. Elle vérifie 15 secondes après le démarrage, puis toutes les 6 heures, et télécharge
-en arrière-plan. Un bandeau propose « Redémarrer pour installer » ; sinon la mise à jour s'installe
-à la fermeture. **Réglages, Mises à jour** permet de vérifier à la demande.
+à configurer. Elle vérifie 15 secondes après le démarrage, puis toutes les 6 heures, mais ne
+télécharge rien sans votre accord : un bandeau signale la version disponible avec un bouton
+« Télécharger ». Une fois téléchargée, il propose « Redémarrer pour installer » ; sinon la mise à
+jour s'installe à la fermeture. **Réglages, Mises à jour** permet de vérifier à la demande.
 
 Hors ligne ou si GitHub limite les requêtes, l'application l'indique dans les réglages et
 réessaie à la prochaine échéance, sans boucle d'erreurs.

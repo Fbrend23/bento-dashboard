@@ -22,6 +22,10 @@ export const useUpdatesStore = defineStore('updates', () => {
     await window.bento.checkForUpdate()
   }
 
+  async function download(): Promise<void> {
+    await window.bento.downloadUpdate()
+  }
+
   async function install(): Promise<void> {
     await window.bento.installUpdate()
   }
@@ -31,5 +35,5 @@ export const useUpdatesStore = defineStore('updates', () => {
     unsubscribe = null
   }
 
-  return { state, init, check, install, dispose }
+  return { state, init, check, download, install, dispose }
 })

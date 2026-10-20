@@ -13,6 +13,7 @@ interface FakeUpdater extends UpdaterLike {
   emit(event: string, ...args: unknown[]): void
   checkForUpdates: Mock<() => Promise<unknown>>
   quitAndInstall: Mock<() => void>
+  downloadUpdate: Mock<() => Promise<unknown>>
 }
 
 function fakeUpdater(): FakeUpdater {
@@ -22,6 +23,7 @@ function fakeUpdater(): FakeUpdater {
     autoInstallOnAppQuit: false,
     checkForUpdates: vi.fn().mockResolvedValue(null),
     quitAndInstall: vi.fn(),
+    downloadUpdate: vi.fn().mockResolvedValue(null),
     on(event, listener) {
       listeners.set(event, [...(listeners.get(event) ?? []), listener])
     },
@@ -54,9 +56,9 @@ afterEach(() => {
 })
 
 describe('UpdateController setup', () => {
-  it('downloads quietly and installs when the app is quit, never on its own', () => {
+  it('never downloads on its own, and installs on quit only what the user downloaded', () => {
     create()
-    expect(updater.autoDownload).toBe(true)
+    expect(updater.autoDownload).toBe(false)
     expect(updater.autoInstallOnAppQuit).toBe(true)
   })
 
@@ -111,11 +113,22 @@ describe('UpdateController check()', () => {
     expect(controller.state).toMatchObject({ phase: 'up-to-date', checkedAt: 5_000 })
   })
 
-  it('follows an update from found to downloaded', async () => {
+  it('waits for the user when an update is found', async () => {
     const controller = create()
     await controller.check()
 
     updater.emit('update-available', { version: '1.1.0' })
+    expect(controller.state).toMatchObject({ phase: 'available', version: '1.1.0', percent: null })
+    expect(updater.downloadUpdate).not.toHaveBeenCalled()
+  })
+
+  it('follows an update from found to downloaded once the user agrees', async () => {
+    const controller = create()
+    await controller.check()
+    updater.emit('update-available', { version: '1.1.0' })
+
+    await controller.download()
+    expect(updater.downloadUpdate).toHaveBeenCalledOnce()
     expect(controller.state).toMatchObject({ phase: 'downloading', version: '1.1.0', percent: 0 })
 
     updater.emit('download-progress', { percent: 41.6 })
@@ -171,6 +184,52 @@ describe('UpdateController check()', () => {
     await controller.check()
     expect(updater.checkForUpdates).not.toHaveBeenCalled()
     expect(controller.state.phase).toBe('ready')
+  })
+})
+
+describe('UpdateController download()', () => {
+  it('does nothing unless an update is waiting for the user', async () => {
+    const controller = create()
+    await controller.download()
+    expect(updater.downloadUpdate).not.toHaveBeenCalled()
+    expect(controller.state.phase).toBe('idle')
+  })
+
+  it('downloads only once when asked twice', async () => {
+    let finish: () => void = () => {}
+    updater.downloadUpdate.mockReturnValue(new Promise<void>((resolve) => (finish = resolve)))
+    const controller = create()
+    updater.emit('update-available', { version: '1.1.0' })
+
+    const first = controller.download()
+    const second = controller.download()
+    finish()
+    await Promise.all([first, second])
+    expect(updater.downloadUpdate).toHaveBeenCalledOnce()
+  })
+
+  it('reports a failed download as a French error, without the raw message', async () => {
+    updater.downloadUpdate.mockRejectedValue(new Error('getaddrinfo ENOTFOUND secret-host'))
+    const controller = create()
+    updater.emit('update-available', { version: '1.1.0' })
+
+    await expect(controller.download()).resolves.toBeUndefined()
+    expect(controller.state).toMatchObject({
+      phase: 'error',
+      error: 'GitHub est injoignable pour le moment.'
+    })
+    expect(JSON.stringify(controller.state)).not.toContain('secret-host')
+  })
+
+  it('does not check again while an update waits for the user', async () => {
+    const controller = create()
+    await controller.check()
+    updater.emit('update-available', { version: '1.1.0' })
+    updater.checkForUpdates.mockClear()
+
+    await controller.check()
+    expect(updater.checkForUpdates).not.toHaveBeenCalled()
+    expect(controller.state).toMatchObject({ phase: 'available', version: '1.1.0' })
   })
 })
 
