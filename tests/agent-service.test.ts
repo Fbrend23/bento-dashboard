@@ -4,6 +4,7 @@ import type { ExecResult } from '../src/main/ssh/connection'
 import { containerActionCommand } from '../src/main/ssh/commands'
 import { SNAPSHOT_COMMAND } from '../src/main/monitors/snapshot'
 import { CommandNotAllowedError } from '../src/main/ssh/connection'
+import { createRunningMemory } from '../src/main/monitors/running-memory'
 import { isAgentCommand } from '../src/agent/commands'
 import { createAgentService, guardExec, type AgentService, type Exec } from '../src/agent/service'
 import { snapshotOutput } from './helpers/snapshot-output'
@@ -141,6 +142,34 @@ describe('runAction', () => {
     await service.runAction('stop', 'jellyfin')
     const status = await service.getStatus()
     expect(status.services.find((s) => s.id === 'jellyfin')?.level).toBe('stopped')
+  })
+
+  it('tells the alerts to hold back the down message while it stops or restarts a container', async () => {
+    const quiet = vi.fn()
+    build({ quiet })
+    await service.getStatus()
+    await service.runAction('start', 'jellyfin')
+    expect(quiet).not.toHaveBeenCalled()
+    await service.runAction('restart', 'jellyfin')
+    await service.runAction('stop', 'jellyfin')
+    expect(quiet).toHaveBeenCalledTimes(2)
+    expect(quiet).toHaveBeenCalledWith('jellyfin', expect.any(Number))
+  })
+
+  it('uses the running memory it is given', async () => {
+    run.mockImplementation(async (command: string) =>
+      command === SNAPSHOT_COMMAND
+        ? {
+            stdout: snapshotOutput({ docker: 'jellyfin|exited||media|Exited (1) 1 second ago\n' }),
+            stderr: '',
+            code: 0
+          }
+        : { stdout: '', stderr: '', code: 0 }
+    )
+    // Remembered as running (e.g. from before an agent restart) and now exited: it went down.
+    build({ memory: createRunningMemory(['jellyfin']) })
+    const status = await service.getStatus()
+    expect(status.services.find((s) => s.id === 'jellyfin')?.level).toBe('down')
   })
 
   it.each([

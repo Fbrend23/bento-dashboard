@@ -4,7 +4,7 @@ import type { CpuSample, NetSample } from '@shared/monitors'
 import { DEFAULT_SETTINGS, type Settings } from '@shared/settings'
 import { runContainerAction } from '../main/actions/container-action'
 import { describeExecError } from '../main/monitors/logs'
-import { createRunningMemory } from '../main/monitors/running-memory'
+import { createRunningMemory, type RunningMemory } from '../main/monitors/running-memory'
 import { buildSnapshot, SNAPSHOT_COMMAND } from '../main/monitors/snapshot'
 import { CommandNotAllowedError, type ExecOptions, type ExecResult } from '../main/ssh/connection'
 import { isAgentCommand } from './commands'
@@ -28,6 +28,10 @@ export interface AgentServiceDeps {
   diskThresholdPercent?: number
   /** Told about every snapshot that was read, by the loop or for a request. Never for a failure. */
   onStatus?: (status: AgentStatus) => void
+  /** The "was running" memory; in-memory when absent. The agent gives a file one to survive restarts. */
+  memory?: RunningMemory
+  /** Told when a container is about to be stopped or restarted from the phone (name, hold in ms). */
+  quiet?: (container: string, durationMs: number) => void
   /** Delay between two reads of the loop. */
   pollMs?: number
   now?: () => number
@@ -63,7 +67,7 @@ export function createAgentService(deps: AgentServiceDeps): AgentService {
     stackLabels: deps.labels.stackLabels,
     hiddenContainers: deps.hiddenContainers
   }
-  const memory = createRunningMemory()
+  const memory = deps.memory ?? createRunningMemory()
   // The baselines the next read measures cpu and network rates against.
   let cpuSample: CpuSample | null = null
   let netSample: NetSample | null = null
@@ -131,8 +135,7 @@ export function createAgentService(deps: AgentServiceDeps): AgentService {
         confirm: () => Promise.resolve(true),
         run: exec,
         refresh: () => refresh().then(() => {}),
-        // No notifications here, so nothing to hold back.
-        quiet: () => {},
+        quiet: (name, durationMs) => deps.quiet?.(name, durationMs),
         forget: (name) => memory.forget(name)
       },
       action,
