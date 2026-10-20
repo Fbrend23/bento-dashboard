@@ -312,11 +312,11 @@ async function submit(): Promise<void> {
         <label class="check">
           <input v-model="form.autoUpdate" type="checkbox" />
           <span>
-            Télécharger et installer les mises à jour automatiquement
+            Télécharger les mises à jour automatiquement
             <small class="hint">
               Sans cette option, l'app propose la nouvelle version et attend votre accord. Avec
-              elle, elle la télécharge dès qu'elle la trouve, puis redémarre toute seule pour
-              l'installer. Effet uniquement sur l'application installée.
+              elle, elle la télécharge dès qu'elle la trouve, puis demande confirmation avant de
+              redémarrer pour l'installer. Effet uniquement sur l'application installée.
             </small>
           </span>
         </label>

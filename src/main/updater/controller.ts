@@ -16,6 +16,8 @@ export interface UpdateControllerDeps {
   isPackaged: boolean
   /** Read at each event, so a change in the settings applies without a restart. */
   autoUpdate: () => boolean
+  /** Native confirmation shown before an automatic restart; the renderer cannot answer it. */
+  confirmRestart: (version: string) => Promise<boolean>
   currentVersion: string
   now?: () => number
 }
@@ -46,9 +48,9 @@ function describeUpdateError(error: unknown): string {
 
 /**
  * Checks GitHub Releases for a new version and only offers it: the download starts when the user
- * agrees, and the installation is left to them (or to the next quit). Unless the user allowed
- * automatic updates in the settings: then both steps follow on their own. A failing check is a
- * normal state: it is reported, never retried in a loop.
+ * agrees, and the installation is left to them (or to the next quit). If the user allowed
+ * automatic updates in the settings, the download follows on its own, but the restart still waits
+ * for a confirmation. A failing check is a normal state: it is reported, never retried in a loop.
  */
 export class UpdateController {
   private current: UpdateState
@@ -95,7 +97,7 @@ export class UpdateController {
         percent: null,
         error: null
       })
-      if (deps.autoUpdate()) this.install()
+      if (deps.autoUpdate()) void this.confirmAndInstall()
     })
     updater.on('update-not-available', () =>
       this.set({ phase: 'up-to-date', checkedAt: this.now(), error: null })
@@ -152,6 +154,17 @@ export class UpdateController {
   /** Restarts the app on the downloaded version. Only possible once the download is complete. */
   install(): void {
     if (this.current.phase === 'ready') this.deps.updater.quitAndInstall()
+  }
+
+  /** Declining leaves the update ready: the bar button or the next quit installs it. */
+  private async confirmAndInstall(): Promise<void> {
+    const { version } = this.current
+    if (version === null) return
+    try {
+      if (await this.deps.confirmRestart(version)) this.install()
+    } catch {
+      // No dialog, no restart: the update stays ready.
+    }
   }
 
   private async runCheck(): Promise<void> {

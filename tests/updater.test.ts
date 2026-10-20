@@ -36,12 +36,14 @@ function fakeUpdater(): FakeUpdater {
 let updater: FakeUpdater
 let now: number
 let autoUpdate: boolean
+let confirmRestart: Mock<(version: string) => Promise<boolean>>
 
 function create(overrides: { isPackaged?: boolean } = {}): UpdateController {
   return new UpdateController({
     updater,
     isPackaged: overrides.isPackaged ?? true,
     autoUpdate: () => autoUpdate,
+    confirmRestart,
     currentVersion: '1.0.0',
     now: () => now
   })
@@ -52,6 +54,7 @@ beforeEach(() => {
   updater = fakeUpdater()
   now = 1_000
   autoUpdate = false
+  confirmRestart = vi.fn().mockResolvedValue(true)
 })
 
 afterEach(() => {
@@ -249,10 +252,35 @@ describe('UpdateController with automatic updates allowed', () => {
     expect(controller.state).toMatchObject({ phase: 'downloading', version: '1.1.0' })
   })
 
-  it('restarts on the downloaded version without asking', () => {
-    create()
+  it('asks before restarting on the downloaded version, then restarts if accepted', async () => {
+    const controller = create()
     updater.emit('update-downloaded', { version: '1.1.0' })
+    expect(confirmRestart).toHaveBeenCalledExactlyOnceWith('1.1.0')
+    expect(updater.quitAndInstall).not.toHaveBeenCalled()
+
+    await vi.advanceTimersByTimeAsync(0)
     expect(updater.quitAndInstall).toHaveBeenCalledOnce()
+    expect(controller.state.phase).toBe('ready')
+  })
+
+  it('keeps the update ready when the restart is declined', async () => {
+    confirmRestart.mockResolvedValue(false)
+    const controller = create()
+    updater.emit('update-downloaded', { version: '1.1.0' })
+    await vi.advanceTimersByTimeAsync(0)
+    expect(updater.quitAndInstall).not.toHaveBeenCalled()
+    expect(controller.state).toMatchObject({ phase: 'ready', version: '1.1.0' })
+
+    controller.install()
+    expect(updater.quitAndInstall).toHaveBeenCalledOnce()
+  })
+
+  it('does not ask again for a manual install', () => {
+    const controller = create()
+    updater.emit('update-downloaded', { version: '1.1.0' })
+    confirmRestart.mockClear()
+    controller.install()
+    expect(confirmRestart).not.toHaveBeenCalled()
   })
 
   it('follows the setting as it is now, not as it was at startup', async () => {
@@ -272,6 +300,7 @@ describe('UpdateController with automatic updates allowed', () => {
     updater.emit('update-downloaded', { version: '1.1.0' })
     await vi.advanceTimersByTimeAsync(0)
     expect(updater.downloadUpdate).not.toHaveBeenCalled()
+    expect(confirmRestart).not.toHaveBeenCalled()
     expect(updater.quitAndInstall).not.toHaveBeenCalled()
   })
 })

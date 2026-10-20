@@ -167,6 +167,25 @@ async function confirmContainerAction(action: ContainerAction, label: string): P
   return response === 0
 }
 
+/** Asked before an automatic update restarts the app; "Plus tard" keeps the update ready. */
+async function confirmUpdateRestart(version: string): Promise<boolean> {
+  const options: MessageBoxOptions = {
+    type: 'question',
+    title: 'Mise à jour prête',
+    message: `Redémarrer Bento pour installer la version ${version} ?`,
+    detail: "Sinon, la mise à jour s'installera à la fermeture de l'application.",
+    buttons: ['Redémarrer', 'Plus tard'],
+    defaultId: 0,
+    cancelId: 1,
+    noLink: true
+  }
+  const parent = visibleWindow()
+  const { response } = parent
+    ? await dialog.showMessageBox(parent, options)
+    : await dialog.showMessageBox(options)
+  return response === 0
+}
+
 /** The path is chosen by the user in a native dialog; the text is main's own copy of the lines. */
 async function saveLogsFile(defaultName: string, text: string): Promise<boolean> {
   const options: SaveDialogOptions = {
@@ -213,6 +232,7 @@ async function main(): Promise<void> {
     updater: createElectronUpdater(),
     isPackaged: app.isPackaged,
     autoUpdate: () => service.getSettings().autoUpdate,
+    confirmRestart: confirmUpdateRestart,
     currentVersion: app.getVersion()
   })
   registerIpc(service, updateController, appUrl)

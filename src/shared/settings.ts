@@ -24,7 +24,7 @@ export interface Settings {
   excludedMounts: string[]
   notifyUnhealthy: boolean
   launchAtStartup: boolean
-  /** Download a new version as soon as it is found and restart on it, without asking. */
+  /** Download a new version as soon as it is found; restarting on it still asks. */
   autoUpdate: boolean
   /** Also notify when a problem that was notified is over (service back, bento reachable…). */
   notifyRecovery: boolean
