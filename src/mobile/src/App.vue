@@ -88,6 +88,17 @@ function onPointerUp(event: PointerEvent): void {
   if (target) selectTab(target)
 }
 
+// Hides Android's own buttons, even if the page was installed before the manifest asked for
+// fullscreen. The browser only allows it from a touch, so the first one does it; a tab in an
+// ordinary browser window is left alone.
+function enterFullscreen(event: PointerEvent): void {
+  if (event.pointerType === 'mouse' || document.fullscreenElement) return
+  if (!window.matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches) return
+  document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {
+    // Refused (no gesture, unsupported): the buttons simply stay.
+  })
+}
+
 const visible = ref(document.visibilityState === 'visible')
 let tick: ReturnType<typeof setInterval> | null = null
 function onVisibility(): void {
@@ -112,12 +123,14 @@ onMounted(() => {
   start()
   tick = setInterval(() => (now.value = Date.now()), 5000)
   document.addEventListener('visibilitychange', onVisibility)
+  window.addEventListener('pointerup', enterFullscreen)
 })
 onBeforeUnmount(() => {
   stop()
   trend.stop()
   if (tick) clearInterval(tick)
   document.removeEventListener('visibilitychange', onVisibility)
+  window.removeEventListener('pointerup', enterFullscreen)
 })
 </script>
 
