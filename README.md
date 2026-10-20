@@ -305,12 +305,28 @@ est demandé dans le terminal si besoin). La première installation reste celle 
 | `containerLabels`, `stackLabels` | Noms affichés, comme dans Réglages, Conteneurs. |
 | `hiddenContainers` | Conteneurs à ne pas afficher. |
 | `diskThresholdPercent` | Seuil d'un disque plein pour les incidents de l'historique, entre 1 et 100 (85 par défaut, comme dans Réglages). |
+| `discordWebhookUrl` | Facultatif. Adresse d'un webhook Discord : l'agent y envoie « conteneur tombé » et « de nouveau actif » (conteneurs et Tailscale), même quand ni le logiciel ni la page ne sont ouverts. Absent = aucune notification. |
 
 L'unité systemd n'active **pas** `NoNewPrivileges` : toutes les commandes passent par `sudo -n`, qui
 cesserait de fonctionner sans message clair.
 
 Prérequis Tailscale : MagicDNS et les certificats HTTPS doivent être activés pour le tailnet (console
 d'administration, DNS). Sans HTTPS, la page s'affiche mais ne peut pas s'installer.
+
+### Notifications Discord
+
+L'agent tourne en continu sur bento : c'est lui qui prévient, sans dépendre du PC ni de la page.
+
+1. Dans Discord : salon → Modifier le salon → Intégrations → Webhooks → Nouveau webhook → Copier l'URL.
+2. Sur bento, ajouter `"discordWebhookUrl": "<l'URL>"` à `/etc/bento-agent/config.json`, qui contient
+   maintenant un secret : `sudo chown root:bento-dash /etc/bento-agent/config.json && sudo chmod 640 /etc/bento-agent/config.json`.
+3. `sudo systemctl restart bento-agent` (ou `npm run deploy:agent`).
+
+Un message rouge part quand un conteneur vu actif s'arrête (ou que `tailscaled` tombe), un vert quand
+il repart. Un arrêt ou un redémarrage lancé depuis la page est retenu. Un conteneur arrêté à la main
+sur bento (`docker stop`) prévient aussi. L'URL ne s'écrit nulle part ailleurs (ni journaux, ni
+messages) ; si elle fuit, supprimer le webhook dans Discord. L'agent doit pouvoir joindre
+`discord.com` en HTTPS.
 
 ### Sur le téléphone
 
