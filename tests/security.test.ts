@@ -68,10 +68,25 @@ describe('windowOpenHandler', () => {
 })
 
 describe('permissionHandler', () => {
-  it('always refuses permission requests', () => {
-    const callback: boolean[] = []
-    permissionHandler(null, 'media', (granted) => callback.push(granted))
-    expect(callback).toEqual([false])
+  it('refuses every permission request except writing plain text to the clipboard', () => {
+    const answers = (permission: string): boolean[] => {
+      const callback: boolean[] = []
+      permissionHandler(null, permission, (granted) => callback.push(granted))
+      return callback
+    }
+    expect(answers('clipboard-sanitized-write')).toEqual([true])
+    for (const permission of [
+      'media',
+      'geolocation',
+      'notifications',
+      'clipboard-read',
+      'openExternal',
+      'fullscreen',
+      'unknown',
+      ''
+    ]) {
+      expect(answers(permission)).toEqual([false])
+    }
   })
 })
 

@@ -31,12 +31,16 @@ export function windowOpenHandler(): { action: 'deny' } {
   return { action: 'deny' }
 }
 
+/**
+ * Everything is refused except writing plain text to the clipboard (the "Copier" button of the
+ * logs): Chromium sanitises what is written, and nothing can be read back.
+ */
 export function permissionHandler(
   _webContents: unknown,
-  _permission: string,
+  permission: string,
   callback: (granted: boolean) => void
 ): void {
-  callback(false)
+  callback(permission === 'clipboard-sanitized-write')
 }
 
 /**
