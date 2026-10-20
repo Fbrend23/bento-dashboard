@@ -3,7 +3,8 @@
 // main checks the name against the settings and the last poll before anything is sent to bento.
 
 import { isContainerName } from './actions'
-import { containerLabel } from './labels'
+import { containerLabel, stackLabel, type LabelSettings } from './labels'
+import type { ServiceLevel, ServiceStatus } from './monitors'
 import type { Settings } from './settings'
 
 export const TAILSCALED_SOURCE = 'tailscaled'
@@ -47,6 +48,55 @@ export function logSources(
     })),
     { id: TAILSCALED_SOURCE, label: 'Tailscale' }
   ]
+}
+
+export interface LogSourceItem extends LogSource {
+  /** State of the container (or of tailscaled) at the last poll; null when it is not in it. */
+  level: ServiceLevel | null
+}
+
+export interface LogSourceGroup {
+  key: string
+  /** Name of the stack; null for the containers outside any stack and for Tailscale. */
+  label: string | null
+  sources: LogSourceItem[]
+}
+
+/**
+ * The sources of the logs screen grouped for a side list: one group per compose project (sorted by
+ * label), then the containers outside any stack, then Tailscale alone. Without a poll (bento
+ * unreachable) every container lands outside a stack, with no level.
+ */
+export function groupLogSources(
+  sources: LogSource[],
+  services: readonly ServiceStatus[],
+  labels: Pick<LabelSettings, 'stackLabels'>
+): LogSourceGroup[] {
+  const byId = new Map(services.map((service) => [service.id, service]))
+  const stacks = new Map<string, LogSourceItem[]>()
+  const loose: LogSourceItem[] = []
+  let tailscale: LogSourceItem | null = null
+
+  for (const source of sources) {
+    const parsed = parseLogSource(source.id)
+    const service = byId.get(parsed?.kind === 'container' ? parsed.name : TAILSCALED_SOURCE)
+    const item: LogSourceItem = { ...source, level: service?.level ?? null }
+    if (parsed?.kind === 'tailscaled') tailscale = item
+    else if (service?.project)
+      stacks.set(service.project, [...(stacks.get(service.project) ?? []), item])
+    else loose.push(item)
+  }
+
+  const groups: LogSourceGroup[] = [...stacks]
+    .map(([project, items]) => ({
+      key: `stack:${project}`,
+      label: stackLabel(project, labels),
+      sources: items
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label, 'fr'))
+  if (loose.length > 0) groups.push({ key: 'loose', label: null, sources: loose })
+  if (tailscale) groups.push({ key: TAILSCALED_SOURCE, label: null, sources: [tailscale] })
+  return groups
 }
 
 /** Outcome of saving the last lines read to a file; a cancelled dialog is a normal answer. */
