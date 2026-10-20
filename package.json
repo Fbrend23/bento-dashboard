@@ -1,6 +1,6 @@
 {
   "name": "bento-dashboard",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "productName": "Bento Dashboard",
   "private": true,
   "description": "Tableau de bord Electron pour surveiller et piloter le serveur bento via Tailscale",
