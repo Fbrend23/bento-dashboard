@@ -1,23 +1,24 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import {
-  actionBusyLabel,
-  actionLabel,
-  availableActions,
-  needsConfirmation,
-  type ContainerAction
-} from '@shared/actions'
 import { confirmationText } from '@shared/confirm-text'
-import { formatAge, levelLabel, rowDetail } from '@shared/format'
+import { needsConfirmation, type ContainerAction } from '@shared/actions'
+import { formatAge } from '@shared/format'
 import type { ServiceStatus } from '@shared/monitors'
-import { groupStacks, sortMembers, stackSummary } from '@shared/stacks'
+import { groupStacks } from '@shared/stacks'
 import { createAgentApi } from './api'
 import { summarize } from './summary'
 import { systemFigures } from './system'
+import { MOBILE_TABS, isSwipeStart, swipeTarget, tabFromHash, type MobileTab } from './tabs'
 import { useBento } from './use-bento'
+import { useHistory } from './use-history'
+import HistoryView from './views/HistoryView.vue'
+import ServicesView from './views/ServicesView.vue'
+import SystemView from './views/SystemView.vue'
 
+const api = createAgentApi(window.fetch.bind(window))
 const { status, fetchedAt, error, loading, busy, actionError, refresh, run, start, stop } =
-  useBento(createAgentApi(window.fetch.bind(window)))
+  useBento(api)
+const trend = useHistory(api)
 
 const summary = computed(() => summarize(status.value, error.value))
 const stacks = computed(() =>
@@ -25,26 +26,30 @@ const stacks = computed(() =>
     ? groupStacks(status.value.services, { stackLabels: status.value.stackLabels, portLabels: {} })
     : []
 )
-
 const system = computed(() => (status.value ? systemFigures(status.value.metrics) : null))
 
 // Ticks only to keep "il y a 12 s" honest; the data itself is read by useBento.
 const now = ref(Date.now())
 const age = computed(() => formatAge(fetchedAt.value, now.value))
 
-// A stack opens by itself when something is wrong in it; the reader's own toggles are kept.
-const expanded = ref(new Set<string>())
-const seen = new Set<string>()
-watch(stacks, (list) => {
-  for (const stack of list) {
-    if (seen.has(stack.id)) continue
-    seen.add(stack.id)
-    if (stack.level !== 'ok' && stack.level !== 'stopped') expanded.value.add(stack.id)
-  }
-})
-function toggle(id: string): void {
-  if (!expanded.value.delete(id)) expanded.value.add(id)
+const tab = ref<MobileTab>(tabFromHash(window.location.hash))
+const direction = ref<'forward' | 'back'>('forward')
+
+function selectTab(next: MobileTab): void {
+  if (next === tab.value) return
+  const order = MOBILE_TABS.map((entry) => entry.id)
+  direction.value = order.indexOf(next) > order.indexOf(tab.value) ? 'forward' : 'back'
+  tab.value = next
+  // The hash keeps the tab over a reload; replacing it keeps Android's back gesture for leaving.
+  window.history.replaceState(null, '', `#${next}`)
 }
+
+// A dot on the tab that needs a look; the history tab has nothing to flag before it is opened.
+const flagged = computed<Record<MobileTab, boolean>>(() => ({
+  services: summary.value.tone === 'warn' || summary.value.tone === 'danger',
+  system: system.value?.disks.some((disk) => disk.alert) ?? false,
+  history: false
+}))
 
 const pending = ref<{ action: ContainerAction; service: ServiceStatus } | null>(null)
 const pendingText = computed(() =>
@@ -63,19 +68,45 @@ function confirm(): void {
   if (request) void run(request.action, request.service.id)
 }
 
-const isBusy = (action: ContainerAction, service: ServiceStatus): boolean =>
-  busy.value?.action === action && busy.value.container === service.id
+// One finger travelling sideways changes the tab; vertical scrolling stays native.
+let touch: { id: number; x: number; y: number } | null = null
 
+function onPointerDown(event: PointerEvent): void {
+  touch = null
+  if (event.pointerType === 'mouse' || !event.isPrimary || pending.value) return
+  // The chart follows the finger to show its values: its movements are not swipes.
+  if (event.target instanceof Element && event.target.closest('.frame')) return
+  if (!isSwipeStart(event.clientX, window.innerWidth)) return
+  touch = { id: event.pointerId, x: event.clientX, y: event.clientY }
+}
+
+function onPointerUp(event: PointerEvent): void {
+  const start = touch
+  touch = null
+  if (!start || start.id !== event.pointerId) return
+  const target = swipeTarget(tab.value, event.clientX - start.x, event.clientY - start.y)
+  if (target) selectTab(target)
+}
+
+const visible = ref(document.visibilityState === 'visible')
 let tick: ReturnType<typeof setInterval> | null = null
 function onVisibility(): void {
   // Nothing is read while the page is hidden: no battery, no needless load on bento.
-  if (document.visibilityState === 'visible') {
+  visible.value = document.visibilityState === 'visible'
+  if (visible.value) {
     now.value = Date.now()
     start()
   } else {
     stop()
   }
 }
+
+// The history is only read while its tab is on screen.
+watch(
+  [tab, visible],
+  ([current, shown]) => (current === 'history' && shown ? trend.start() : trend.stop()),
+  { immediate: true }
+)
 
 onMounted(() => {
   start()
@@ -84,13 +115,19 @@ onMounted(() => {
 })
 onBeforeUnmount(() => {
   stop()
+  trend.stop()
   if (tick) clearInterval(tick)
   document.removeEventListener('visibilitychange', onVisibility)
 })
 </script>
 
 <template>
-  <main class="page">
+  <main
+    class="page"
+    @pointerdown="onPointerDown"
+    @pointerup="onPointerUp"
+    @pointercancel="touch = null"
+  >
     <header class="lid" :class="`tone-${summary.tone}`" role="status" aria-live="polite">
       <div class="lid-text">
         <h1 class="lid-title">{{ summary.title }}</h1>
@@ -109,76 +146,61 @@ onBeforeUnmount(() => {
       </button>
     </header>
 
-    <section v-for="stack in stacks" :key="stack.id" class="well stack">
-      <button
-        class="stack-head"
-        type="button"
-        :aria-expanded="expanded.has(stack.id)"
-        @click="toggle(stack.id)"
-      >
-        <span class="dot" :class="`level-${stack.level}`" aria-hidden="true"></span>
-        <span class="stack-name">{{ stack.label }}</span>
-        <span class="stack-summary">{{ stackSummary(stack) }}</span>
-        <span class="chevron" :class="{ open: expanded.has(stack.id) }" aria-hidden="true">›</span>
-      </button>
-
-      <ul v-if="expanded.has(stack.id)" class="rows">
-        <li v-for="service in sortMembers(stack.members)" :key="service.id" class="row">
-          <span class="dot" :class="`level-${service.level}`" aria-hidden="true"></span>
-          <div class="row-text">
-            <span class="row-name">{{ service.label }}</span>
-            <span class="row-detail">{{ rowDetail(service.detail) }}</span>
-          </div>
-          <span class="row-level" :class="`level-${service.level}`">
-            {{ levelLabel(service.level) }}
-          </span>
-          <div v-if="availableActions(service).length" class="row-actions">
-            <button
-              v-for="action in availableActions(service)"
-              :key="action"
-              class="btn"
-              :class="{ 'btn-quiet': action === 'stop' }"
-              type="button"
-              :disabled="busy !== null"
-              @click="ask(action, service)"
-            >
-              {{ isBusy(action, service) ? actionBusyLabel(action) : actionLabel(action) }}
-            </button>
-          </div>
-          <p v-if="actionError?.container === service.id" class="row-error" role="alert">
-            {{ actionError.message }}
-          </p>
-        </li>
-      </ul>
-    </section>
-
-    <section v-if="system" class="well system" aria-label="Système">
-      <h2 class="system-title">Système</h2>
-      <dl class="figures">
-        <div v-for="row in system.rows" :key="row.label" class="figure">
-          <dt>{{ row.label }}</dt>
-          <dd>{{ row.value }}</dd>
-        </div>
-      </dl>
-      <ul v-if="system.disks.length" class="disks">
-        <li v-for="disk in system.disks" :key="disk.mount" class="disk">
-          <div class="disk-line">
-            <span class="disk-mount">{{ disk.mount }}</span>
-            <span class="disk-value" :class="{ alert: disk.alert }">{{ disk.value }}</span>
-          </div>
-          <div class="bar" aria-hidden="true">
-            <div
-              class="bar-fill"
-              :class="{ alert: disk.alert }"
-              :style="{ width: `${Math.min(100, Math.max(0, disk.percent))}%` }"
-            ></div>
-          </div>
-        </li>
-      </ul>
-    </section>
+    <Transition :name="`slide-${direction}`" mode="out-in">
+      <KeepAlive>
+        <ServicesView
+          v-if="tab === 'services'"
+          :stacks="stacks"
+          :busy="busy"
+          :action-error="actionError"
+          @ask="ask"
+        />
+        <SystemView v-else-if="tab === 'system'" :system="system" />
+        <HistoryView
+          v-else
+          :range="trend.range.value"
+          :result="trend.result.value"
+          :error="trend.error.value"
+          :loading="trend.loading.value"
+          @range="trend.setRange"
+        />
+      </KeepAlive>
+    </Transition>
 
     <p v-if="fetchedAt !== null" class="foot">Dernière lecture {{ age }}</p>
   </main>
+
+  <nav class="tabbar" aria-label="Sections">
+    <button
+      v-for="entry in MOBILE_TABS"
+      :key="entry.id"
+      class="tab"
+      type="button"
+      :aria-current="tab === entry.id ? 'page' : undefined"
+      @click="selectTab(entry.id)"
+    >
+      <span class="tab-icon">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <template v-if="entry.id === 'services'">
+            <rect x="4" y="4" width="7" height="7" rx="1.5" />
+            <rect x="13" y="4" width="7" height="7" rx="1.5" />
+            <rect x="4" y="13" width="7" height="7" rx="1.5" />
+            <rect x="13" y="13" width="7" height="7" rx="1.5" />
+          </template>
+          <template v-else-if="entry.id === 'system'">
+            <path d="M4 16a8 8 0 1 1 16 0" />
+            <path d="M12 16l4-5" />
+          </template>
+          <template v-else>
+            <path d="M4 5v14h16" />
+            <path d="M7 15l4-5 3 3 5-6" />
+          </template>
+        </svg>
+        <span v-if="flagged[entry.id]" class="tab-flag" aria-hidden="true"></span>
+      </span>
+      <span class="tab-label">{{ entry.label }}</span>
+    </button>
+  </nav>
 
   <div v-if="pending && pendingText" class="backdrop" @click.self="pending = null">
     <div class="sheet" role="dialog" aria-modal="true" :aria-label="pendingText.title">

@@ -21,6 +21,14 @@
   --lacquer-lid: #f3c9c1;
   --stone: #62716a;
   --stone-lid: #dbe3de;
+  --tabbar-height: 64px;
+
+  /* Chart series and corner, as on the desktop (TrendChart reads them). */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --radius-well: 8px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -41,6 +49,11 @@
     --lacquer-lid: #43201b;
     --stone: #8da097;
     --stone-lid: #1d2b25;
+
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
   }
 }
 
@@ -79,7 +92,16 @@ button {
   max-width: 640px;
   margin: 0 auto;
   padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
-    max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+    calc(var(--tabbar-height) + max(16px, env(safe-area-inset-bottom)))
+    max(16px, env(safe-area-inset-left));
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* One tab's content: a single root, so it can be kept alive and slid in. */
+.panel {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -165,14 +187,14 @@ button {
   list-style: none;
   border-top: 1px solid var(--well-edge);
 }
-.row {
+.stack .row {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 4px 10px;
   padding: 12px 14px;
 }
-.row + .row {
+.stack .row + .row {
   border-top: 1px solid var(--well-edge);
 }
 .row-text {
@@ -217,22 +239,22 @@ button {
   font-size: 0.875rem;
 }
 
-.dot {
+.stack .dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
   background: var(--stone);
   flex: none;
 }
-.dot.level-ok {
+.stack .dot.level-ok {
   background: var(--jade);
 }
-.dot.level-degraded,
-.dot.level-unknown {
+.stack .dot.level-degraded,
+.stack .dot.level-unknown {
   background: var(--amber);
 }
-.dot.level-down,
-.dot.level-absent {
+.stack .dot.level-down,
+.stack .dot.level-absent {
   background: var(--lacquer);
 }
 
@@ -392,4 +414,179 @@ button {
 }
 .bar-fill.alert {
   background: var(--lacquer);
+}
+
+/* Bottom bar: the three tabs. Fixed, above the system gesture area. */
+.tabbar {
+  position: fixed;
+  inset: auto 0 0;
+  display: flex;
+  padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background: var(--well);
+  border-top: 1px solid var(--well-edge);
+}
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: var(--tabbar-height);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.tab[aria-current='page'] {
+  color: var(--indigo);
+}
+.tab-icon {
+  position: relative;
+  display: inline-flex;
+}
+.tab-icon svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.tab-flag {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--lacquer);
+  border: 2px solid var(--well);
+}
+.tab-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* A tab slides in from the side it sits on. */
+.slide-forward-enter-active,
+.slide-forward-leave-active,
+.slide-back-enter-active,
+.slide-back-leave-active {
+  transition:
+    transform 0.14s ease-out,
+    opacity 0.14s ease-out;
+}
+.slide-forward-enter-from,
+.slide-back-leave-to {
+  transform: translateX(28px);
+  opacity: 0;
+}
+.slide-forward-leave-to,
+.slide-back-enter-from {
+  transform: translateX(-28px);
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .slide-forward-enter-active,
+  .slide-forward-leave-active,
+  .slide-back-enter-active,
+  .slide-back-leave-active {
+    transition: none;
+  }
+}
+
+/* The page scrolls vertically by itself; sideways movements are ours (swipes between tabs). */
+.page {
+  touch-action: pan-y;
+}
+
+/* History tab. */
+.filters {
+  display: flex;
+  gap: 8px;
+}
+.range {
+  flex: 1;
+  min-height: 44px;
+  border: 1px solid var(--well-edge);
+  border-radius: 999px;
+  background: var(--well);
+  color: var(--ink-soft);
+  font-weight: 700;
+  cursor: pointer;
+}
+.range[aria-pressed='true'] {
+  border-color: var(--indigo);
+  background: var(--indigo);
+  color: var(--indigo-ink);
+}
+.notice {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--lacquer-lid);
+}
+.history-empty,
+.incidents {
+  padding: 12px 16px;
+}
+.history-empty h2,
+.incidents-title {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+.history-empty p,
+.incidents-none {
+  margin: 0;
+  color: var(--ink-soft);
+}
+.chart-well {
+  padding: 12px 12px 8px;
+}
+.incident-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.incident {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--well-edge);
+}
+.incident:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+.incident .tile {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--stone);
+}
+.incident .tile.open {
+  background: var(--lacquer);
+}
+.incident-what {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.incident-name {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.incident-sub {
+  color: var(--ink-soft);
+  font-size: 0.8125rem;
+}
+.incident-state {
+  color: var(--lacquer);
+  font-weight: 700;
+  font-size: 0.875rem;
 }
