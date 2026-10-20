@@ -1,6 +1,6 @@
 // Shell cache only. The API is never intercepted or stored: a status or an action must always
 // come from bento itself, never from a copy.
-const CACHE = 'bento-shell-v1'
+const CACHE = 'bento-shell-v2'
 
 self.addEventListener('install', () => self.skipWaiting())
 
