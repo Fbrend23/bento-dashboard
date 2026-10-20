@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "points": [
+    { "t": 1787000040000, "cpu": 12.5, "memory": 41.2, "swap": 0, "down": 1200, "up": 300, "temperature": 48.5, "disks": { "/": 31.4, "/media": 62.0 } },
+    { "t": 1787000100000, "cpu": 18.0, "memory": 41.6, "swap": 0, "down": 2400, "up": 500, "temperature": 49.0, "disks": { "/": 31.4, "/media": 62.0 } },
+    { "t": 1787000160000, "cpu": null, "memory": 42.0, "swap": null, "down": null, "up": null, "temperature": null, "disks": { "/": 31.5 } }
+  ],
+  "incidents": [
+    { "key": "service-down:app-1", "kind": "service-down", "subject": "App 1", "startedAt": 1787000070000, "endedAt": 1787000130000 },
+    { "key": "disk-full:/media", "kind": "disk-full", "subject": "/media", "startedAt": 1787000150000, "endedAt": null }
+  ]
+}

@@ -7,6 +7,7 @@ import {
   CONTAINER_ACTION_SCRIPT,
   containerActionCommand,
   containerLogCommand,
+  HISTORY_COMMAND,
   isAllowedCommand,
   logCommand,
   TAILSCALED_LOG_COMMAND
@@ -19,6 +20,7 @@ describe('isAllowedCommand (fixed commands)', () => {
   it('allows every known fixed command, exactly', () => {
     expect(isAllowedCommand(SNAPSHOT_COMMAND)).toBe(true)
     expect(isAllowedCommand(TAILSCALED_LOG_COMMAND)).toBe(true)
+    expect(isAllowedCommand(HISTORY_COMMAND)).toBe(true)
   })
 
   it('refuses variants, additions and anything else', () => {
@@ -29,7 +31,11 @@ describe('isAllowedCommand (fixed commands)', () => {
       `${SNAPSHOT_COMMAND} `,
       TAILSCALED_LOG_COMMAND.replace('-n 200', '-n 201'),
       TAILSCALED_LOG_COMMAND.replace('tailscaled', 'sshd'),
-      `${TAILSCALED_LOG_COMMAND} `
+      `${TAILSCALED_LOG_COMMAND} `,
+      HISTORY_COMMAND.replace('history.json', 'config.json'),
+      HISTORY_COMMAND.replace('cat', 'tee'),
+      `${HISTORY_COMMAND} /etc/shadow`,
+      `${HISTORY_COMMAND}; reboot`
     ]) {
       expect(isAllowedCommand(command)).toBe(false)
     }
@@ -146,6 +152,12 @@ describe('isAllowedCommand (container actions)', () => {
 })
 
 describe('known commands', () => {
+  it('the history is read from the agent file, without sudo and without arguments to vary', () => {
+    expect(HISTORY_COMMAND).toBe('timeout 10 cat /var/lib/bento-agent/history.json')
+    expect(HISTORY_COMMAND).not.toMatch(/[;&|<>`$()*]/)
+    expect(HISTORY_COMMAND).not.toContain('sudo')
+  })
+
   it('the tailscaled journal is read with fixed arguments', () => {
     expect(TAILSCALED_LOG_COMMAND).toBe(
       'timeout 10 sudo -n journalctl -u tailscaled -n 200 --no-pager -o short-iso'

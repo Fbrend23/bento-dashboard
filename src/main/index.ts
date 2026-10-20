@@ -18,8 +18,6 @@ import { IPC_CHANNELS } from '@shared/ipc'
 import { isRefreshShortcut } from '@shared/shortcuts'
 import type { AppView } from '@shared/views'
 import { confirmationText } from '@shared/confirm-text'
-import { createHistory } from './history/history'
-import { createHistoryStore } from './history/store'
 import { registerIpc } from './ipc'
 import { createFileRunningMemory } from './monitors/running-memory'
 import { createNotifier, type Notifier } from './notifications/notifier'
@@ -194,11 +192,7 @@ async function main(): Promise<void> {
 
   // The notifier is created after the service, which needs it only once a restart is requested.
   let notifier: Notifier | null = null
-  const history = await createHistory({
-    store: createHistoryStore(join(app.getPath('userData'), 'history.json'))
-  })
   const service = await createBentoService({
-    history,
     store: createSettingsStore(join(app.getPath('userData'), 'settings.json')),
     createConnector: createSsh2Connector,
     onSettings: (settings) =>
@@ -224,6 +218,8 @@ async function main(): Promise<void> {
   updateController.start()
   // The 1.0 to 1.2 versions kept an encrypted read-only token here; the repository is public now.
   void rm(join(app.getPath('userData'), 'update-token.bin'), { force: true }).catch(() => {})
+  // Until 1.3 the history was recorded here; the agent on bento keeps it now (and it starts afresh).
+  void rm(join(app.getPath('userData'), 'history.json'), { force: true }).catch(() => {})
 
   const tray = createTray(service.status, {
     open: showWindow,
@@ -254,8 +250,6 @@ async function main(): Promise<void> {
   })
   const tick = setInterval(() => {
     activeNotifier.check(service.status)
-    // A long outage publishes no new status: this keeps the history aware that it still lasts.
-    history.observe(service.status)
   }, NOTIFIER_TICK_MS)
 
   app.on('before-quit', () => {
@@ -263,8 +257,6 @@ async function main(): Promise<void> {
     clearInterval(tick)
   })
   app.on('will-quit', () => {
-    // Last write of the history, synchronous: nothing can be awaited at this point.
-    history.flushSync()
     tray.destroy()
     updateController.stop()
     service.dispose()

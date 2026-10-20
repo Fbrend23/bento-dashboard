@@ -15,7 +15,7 @@ import { runContainerAction } from './actions/container-action'
 import { buildServiceUrl } from './links'
 import { describeExecError, isSudoersRefusal, toLogsResult } from './monitors/logs'
 import { StatusPoller } from './monitors/poller'
-import type { History } from './history/history'
+import { createRemoteHistory, type RemoteHistory } from './history/remote'
 import type { RunningMemory } from './monitors/running-memory'
 import { toSshConfig } from './settings/ssh-config'
 import { SettingsValidationError, type SettingsStore } from './settings/store'
@@ -42,8 +42,6 @@ export interface ServiceDeps {
   saveLogsFile?: (defaultName: string, text: string) => Promise<boolean>
   /** Holds back the "service down" notification of one service for a while. */
   quietNotifications?: (serviceId: string, durationMs: number) => void
-  /** The history of metrics and incidents; fed with every status. Without it there is none. */
-  history?: Pick<History, 'observe' | 'query'>
   /** Which containers were seen running (persisted by the app); in memory only when absent. */
   runningMemory?: RunningMemory
   /** Opens a URL in the default browser. Without it, opening a port is always declined. */
@@ -66,6 +64,8 @@ function sameConnection(a: Settings, b: Settings): boolean {
 export class BentoService {
   private readonly manager: ConnectionManager
   private readonly poller: StatusPoller
+  /** The history kept by the agent on bento: this app only reads it. */
+  private readonly history: RemoteHistory
   private testing = false
   /** Last successful read per source: what an export writes. */
   private readonly lastLogs = new Map<string, string>()
@@ -82,7 +82,7 @@ export class BentoService {
       getSettings: () => this.settings,
       runningMemory: deps.runningMemory
     })
-    if (deps.history) this.poller.onStatus((status) => deps.history?.observe(status))
+    this.history = createRemoteHistory({ run: (command) => this.manager.run(command) })
     this.poller.start()
     if (isConfigured(settings)) this.manager.start()
     deps.onSettings?.(structuredClone(settings))
@@ -218,9 +218,12 @@ export class BentoService {
     }
   }
 
-  /** `range` is untrusted: the history only answers the fixed ranges, and null otherwise. */
-  getHistory(range: unknown): HistoryResult | null {
-    return this.deps.history?.query(range) ?? null
+  /**
+   * `range` is untrusted: only the fixed ranges are answered, and null otherwise. Fails when bento
+   * cannot be read and no earlier copy exists (the renderer shows that as a notice).
+   */
+  getHistory(range: unknown): Promise<HistoryResult | null> {
+    return this.history.query(range)
   }
 
   getSettings(): Settings {

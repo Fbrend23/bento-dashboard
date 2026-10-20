@@ -28,7 +28,7 @@ interface IpcService {
   /** Receives an untrusted value and validates it itself. */
   getLogs(source: unknown): Promise<LogsResult>
   /** Receives an untrusted value and validates it itself. */
-  getHistory(range: unknown): HistoryResult | null
+  getHistory(range: unknown): Promise<HistoryResult | null>
   /** Receives an untrusted value and validates it itself. */
   exportLogs(source: unknown): Promise<ExportLogsResult>
   /** Receives untrusted values and validates them itself. */

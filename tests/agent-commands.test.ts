@@ -3,6 +3,7 @@ import { SNAPSHOT_COMMAND } from '../src/main/monitors/snapshot'
 import {
   containerActionCommand,
   containerLogCommand,
+  HISTORY_COMMAND,
   TAILSCALED_LOG_COMMAND,
   TEST_CONNECTION_COMMAND
 } from '../src/main/ssh/commands'
@@ -19,6 +20,8 @@ describe('isAgentCommand', () => {
   it('refuses logs, the connection test and anything else the desktop app may run', () => {
     expect(isAgentCommand(TAILSCALED_LOG_COMMAND)).toBe(false)
     expect(isAgentCommand(TEST_CONNECTION_COMMAND)).toBe(false)
+    // The agent writes the history file itself: reading it back is for the desktop app only.
+    expect(isAgentCommand(HISTORY_COMMAND)).toBe(false)
     expect(isAgentCommand(containerLogCommand('jellyfin')!)).toBe(false)
   })
 

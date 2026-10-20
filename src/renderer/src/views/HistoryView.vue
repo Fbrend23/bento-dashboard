@@ -50,14 +50,17 @@ onBeforeUnmount(() => clearInterval(timer))
     </div>
 
     <p v-if="failed" class="notice error" role="alert">
-      L'historique n'a pas pu être lu. Les derniers graphes restent affichés.
+      L'historique n'a pas pu être lu sur bento : le serveur est injoignable, ou l'agent n'est pas
+      installé.
+      <template v-if="charts.length > 0">Les derniers graphes restent affichés.</template>
     </p>
 
-    <section v-if="charts.length === 0 && !loading" class="well empty">
+    <section v-if="charts.length === 0 && !loading && !failed" class="well empty">
       <h2>Historique</h2>
       <p>
-        Rien à montrer pour l'instant. L'historique se remplit au fil des relevés, une valeur par
-        minute, et se conserve 7 jours, même quand l'application est fermée puis rouverte.
+        Rien à montrer pour l'instant. L'historique est tenu par l'agent sur bento : un relevé
+        toutes les 30 secondes, une valeur par minute, conservée 7 jours, même quand cette
+        application est fermée.
       </p>
     </section>
 

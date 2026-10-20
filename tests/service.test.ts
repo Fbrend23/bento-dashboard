@@ -8,8 +8,10 @@ import { SNAPSHOT_COMMAND } from '../src/main/monitors/snapshot'
 import {
   containerActionCommand,
   containerLogCommand,
+  HISTORY_COMMAND,
   TAILSCALED_LOG_COMMAND
 } from '../src/main/ssh/commands'
+import { HistoryUnavailableError } from '../src/main/history/remote'
 import type { Connector, SshSession } from '../src/main/ssh/connection'
 import type { SshConfig } from '../src/main/ssh/ssh2-connector'
 import { createRunningMemory } from '../src/main/monitors/running-memory'
@@ -856,35 +858,68 @@ describe('BentoService.testConnection', () => {
 })
 
 describe('BentoService.getHistory', () => {
-  const result = { range: '24h' as const, points: [], incidents: [], now: 1 }
+  const file = JSON.stringify({
+    points: [
+      {
+        t: Date.now(),
+        cpu: 10,
+        memory: 20,
+        swap: null,
+        down: null,
+        up: null,
+        temperature: null,
+        disks: {}
+      }
+    ],
+    incidents: []
+  })
+  const historyReads = (session: FakeSession): unknown[] =>
+    session.exec.mock.calls.filter((call) => call[0] === HISTORY_COMMAND)
 
-  it('has no history without one, and says so rather than failing', async () => {
-    const { store, createConnector } = harness(configured)
+  async function connected(): Promise<{
+    service: Awaited<ReturnType<typeof createBentoService>>
+    session: FakeSession
+  }> {
+    const { store, createConnector, sessions } = harness(configured)
     const service = await createBentoService({ store, createConnector })
-    expect(service.getHistory('24h')).toBeNull()
-    service.dispose()
-  })
-
-  it('feeds the history with every status the poller publishes', async () => {
-    const history = { observe: vi.fn(), query: vi.fn().mockReturnValue(result) }
-    const { store, createConnector } = harness(configured)
-    const service = await createBentoService({ store, createConnector, history })
     await flush()
-    expect(history.observe).toHaveBeenCalled()
-    const last = history.observe.mock.calls.at(-1)?.[0] as BentoStatus
-    expect(last.connection).toBe('online')
-    expect(last.metrics).not.toBeNull()
+    const session = sessions[0]
+    session.exec.mockImplementation(async (command: string) => ({
+      stdout: command === HISTORY_COMMAND ? file : snapshotOutput(),
+      stderr: '',
+      code: 0
+    }))
+    return { service, session }
+  }
+
+  it('reads the history kept by the agent on bento, through the connection', async () => {
+    const { service, session } = await connected()
+    const result = await service.getHistory('1h')
+    expect(historyReads(session)).toHaveLength(1)
+    expect(result).toMatchObject({ range: '1h' })
+    expect(result?.points).toHaveLength(1)
     service.dispose()
   })
 
-  it('forwards the untrusted range to the history, which validates it', async () => {
-    const history = { observe: vi.fn(), query: vi.fn().mockReturnValue(result) }
-    const { store, createConnector } = harness(configured)
-    const service = await createBentoService({ store, createConnector, history })
-    expect(service.getHistory('24h')).toBe(result)
-    expect(history.query).toHaveBeenCalledExactlyOnceWith('24h')
-    service.getHistory({ evil: true })
-    expect(history.query).toHaveBeenLastCalledWith({ evil: true })
+  it('answers null for a range it does not know, without reading anything', async () => {
+    const { service, session } = await connected()
+    await expect(service.getHistory({ evil: true })).resolves.toBeNull()
+    expect(historyReads(session)).toHaveLength(0)
+    service.dispose()
+  })
+
+  it('fails with a clear error, not a crash, when bento is not reachable', async () => {
+    const { store, createConnector } = harness(DEFAULT_SETTINGS)
+    const service = await createBentoService({ store, createConnector })
+    await expect(service.getHistory('24h')).rejects.toBeInstanceOf(HistoryUnavailableError)
+    service.dispose()
+  })
+
+  it('no longer records anything on this machine', async () => {
+    const { service, session } = await connected()
+    await flush(120_000)
+    // Only the agent on bento keeps the history: the app asks for it when a screen needs it.
+    expect(historyReads(session)).toHaveLength(0)
     service.dispose()
   })
 })

@@ -60,6 +60,13 @@ export function logCommand(source: ParsedLogSource): string | null {
   return source.kind === 'tailscaled' ? TAILSCALED_LOG_COMMAND : containerLogCommand(source.name)
 }
 
+/**
+ * The history kept by the bento agent (`StateDirectory=bento-agent` in its unit). Read-only, no
+ * sudo: the agent and the SSH user are the same account. The desktop app parses it with the same
+ * lenient `parseHistory` it always used; the agent itself never runs this command.
+ */
+export const HISTORY_COMMAND = 'timeout 10 cat /var/lib/bento-agent/history.json'
+
 /** "Tester la connexion": a no-op that only proves a command can run over the new settings. */
 export const TEST_CONNECTION_COMMAND = 'true'
 
@@ -67,7 +74,8 @@ export const TEST_CONNECTION_COMMAND = 'true'
 export const ALLOWED_COMMANDS: readonly string[] = Object.freeze([
   SNAPSHOT_COMMAND,
   TEST_CONNECTION_COMMAND,
-  TAILSCALED_LOG_COMMAND
+  TAILSCALED_LOG_COMMAND,
+  HISTORY_COMMAND
 ])
 
 /** Allow-list enforced before anything is sent over SSH: exact match, or one of the two patterns. */
