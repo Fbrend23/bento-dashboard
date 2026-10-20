@@ -217,7 +217,8 @@ n'est pas ouverte en permanence, c'est donc l'agent qui relève bento toutes les
 garde l'historique (une valeur par minute et les incidents, sur 7 jours) dans
 `/var/lib/bento-agent/history.json`. Le bureau le lit à la demande, avec une commande figée sans
 `sudo`. Un arrêt de l'agent ou de bento apparaît comme un incident « injoignable » une fois
-l'agent reparti, et comme un trou dans les courbes. Le téléphone n'affiche pas l'historique.
+l'agent reparti, et comme un trou dans les courbes. Le téléphone l'affiche aussi, en lecture seule,
+par la route `GET /api/history?range=1h|24h|7d` de l'agent.
 
 Pour vérifier bento et redémarrer un conteneur depuis un téléphone, le même agent sert une page web
 installable (PWA). Il n'écoute que sur `127.0.0.1` : seul
@@ -226,7 +227,10 @@ installable (PWA). Il n'écoute que sur `127.0.0.1` : seul
 L'agent exécute localement les mêmes commandes que l'application de bureau, avec la même liste
 blanche réduite à deux choses : le relevé d'état et démarrer, arrêter, redémarrer un conteneur. Pas
 de logs ni de notifications sur le téléphone ; les chiffres du système (processeur, mémoire,
-disques, disponibilité, charge) viennent du même relevé. Il réutilise l'utilisateur
+disques, disponibilité, charge) viennent du même relevé. La page a trois onglets (Services,
+Système, Historique), une barre en bas et des swipes pour passer de l'un à l'autre, et s'ouvre en
+plein écran : après une mise à jour du manifeste, désinstaller puis réinstaller la page sur le
+téléphone. Il réutilise l'utilisateur
 `bento-dash` et les règles sudoers de l'étape 2 : il n'y a rien à ajouter de ce côté-là.
 
 ### Installer l'agent
