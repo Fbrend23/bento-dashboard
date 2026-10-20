@@ -115,3 +115,81 @@ describe('runAction', () => {
     }
   })
 })
+
+describe('getHistory', () => {
+  const RESULT = {
+    range: '24h',
+    points: [
+      {
+        t: 1,
+        cpu: 12,
+        memory: 40,
+        swap: null,
+        down: 0,
+        up: 0,
+        temperature: null,
+        disks: { '/': 50 }
+      }
+    ],
+    incidents: [
+      {
+        key: 'service-down:app-1',
+        kind: 'service-down',
+        subject: 'App',
+        startedAt: 1,
+        endedAt: null
+      }
+    ],
+    now: 2
+  }
+
+  it('asks the history route for one fixed range, without any cache', async () => {
+    const fetchFn = vi.fn().mockResolvedValue(reply(200, RESULT))
+    await expect(apiWith(fetchFn).getHistory('24h')).resolves.toEqual({ ok: true, result: RESULT })
+    const [url, init] = fetchFn.mock.calls[0]
+    expect(url).toBe('/api/history?range=24h')
+    expect(init).toMatchObject({ cache: 'no-store', credentials: 'same-origin' })
+  })
+
+  it('says bento is unreachable when the network fails', async () => {
+    const fetchFn = vi.fn().mockRejectedValue(new TypeError('Failed to fetch'))
+    await expect(apiWith(fetchFn).getHistory('1h')).resolves.toEqual({
+      ok: false,
+      error: 'Bento est injoignable.'
+    })
+  })
+
+  it('explains a refusal in French', async () => {
+    const result = await apiWith(
+      vi.fn().mockResolvedValue(reply(403, { error: 'Accès refusé.' }))
+    ).getHistory('1h')
+    expect(result).toEqual({
+      ok: false,
+      error: "Ce téléphone n'est pas autorisé à utiliser l'agent."
+    })
+  })
+
+  it("shows the agent's own message when the history is unavailable", async () => {
+    const result = await apiWith(
+      vi.fn().mockResolvedValue(reply(500, { error: "L'historique est indisponible." }))
+    ).getHistory('1h')
+    expect(result).toEqual({ ok: false, error: "L'historique est indisponible." })
+  })
+
+  it('rejects an answer that is not a history', async () => {
+    for (const body of [
+      '<html>',
+      '{}',
+      'null',
+      { ...RESULT, range: '30d' },
+      { ...RESULT, points: {} },
+      { ...RESULT, points: [null] },
+      { ...RESULT, points: [{ t: 'x' }] },
+      { ...RESULT, incidents: [{ key: 1 }] },
+      { ...RESULT, now: 'x' }
+    ]) {
+      const result = await apiWith(vi.fn().mockResolvedValue(reply(200, body))).getHistory('24h')
+      expect(result).toEqual({ ok: false, error: "Réponse inattendue de l'agent." })
+    }
+  })
+})

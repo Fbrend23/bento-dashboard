@@ -3,12 +3,20 @@ import {
   AGENT_ACTION_PATH,
   AGENT_HEADER,
   AGENT_HEADER_VALUE,
+  AGENT_HISTORY_PATH,
   AGENT_STATUS_PATH,
   type AgentActionRequest,
   type AgentStatus
 } from '@shared/agent'
+import { isHistoryRange, type HistoryRange, type HistoryResult } from '@shared/history'
 
 export type StatusResult = { ok: true; status: AgentStatus } | { ok: false; error: string }
+
+export type HistoryReply = { ok: true; result: HistoryResult } | { ok: false; error: string }
+
+export interface HistoryApi {
+  getHistory(range: HistoryRange): Promise<HistoryReply>
+}
 
 export interface AgentApi {
   getStatus(): Promise<StatusResult>
@@ -43,11 +51,30 @@ function isAgentStatus(value: unknown): value is AgentStatus {
   )
 }
 
+function isHistoryResult(value: unknown): value is HistoryResult {
+  return (
+    isRecord(value) &&
+    isHistoryRange(value.range) &&
+    typeof value.now === 'number' &&
+    Array.isArray(value.points) &&
+    value.points.every((point) => isRecord(point) && typeof point.t === 'number') &&
+    Array.isArray(value.incidents) &&
+    value.incidents.every(
+      (incident) =>
+        isRecord(incident) &&
+        typeof incident.key === 'string' &&
+        typeof incident.kind === 'string' &&
+        typeof incident.subject === 'string' &&
+        typeof incident.startedAt === 'number'
+    )
+  )
+}
+
 /**
  * The page's only door to bento: two same-origin requests to the agent that served it. The
  * confirmation for stop and restart happens in the page, before `runAction` is called.
  */
-export function createAgentApi(fetchFn: typeof fetch): AgentApi {
+export function createAgentApi(fetchFn: typeof fetch): AgentApi & HistoryApi {
   return {
     async getStatus() {
       let response: Response
@@ -66,6 +93,23 @@ export function createAgentApi(fetchFn: typeof fetch): AgentApi {
       }
       if (!response.ok || !isAgentStatus(body)) return { ok: false, error: UNEXPECTED }
       return { ok: true, status: body }
+    },
+
+    async getHistory(range) {
+      let response: Response
+      try {
+        response = await fetchFn(`${AGENT_HISTORY_PATH}?range=${range}`, {
+          cache: 'no-store',
+          credentials: 'same-origin'
+        })
+      } catch {
+        return { ok: false, error: UNREACHABLE }
+      }
+      if (response.status === 403) return { ok: false, error: FORBIDDEN }
+      const body = await readJson(response)
+      if (!response.ok) return { ok: false, error: errorOf(body, UNEXPECTED) }
+      if (!isHistoryResult(body)) return { ok: false, error: UNEXPECTED }
+      return { ok: true, result: body }
     },
 
     async runAction(action, container) {
