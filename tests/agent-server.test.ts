@@ -4,7 +4,7 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AgentStatus } from '../src/shared/agent'
-import { createAgentServer, type ServedAgent } from '../src/agent/server'
+import { createAgentServer, type ServedAgent, type ServedHistory } from '../src/agent/server'
 import { metrics } from './helpers/status'
 
 const LOGIN = 'owner@example.com'
@@ -29,6 +29,7 @@ const STATUS: AgentStatus = {
 }
 
 let service: ServedAgent
+let history: ServedHistory
 let staticDir: string
 let close: () => Promise<void>
 let base: string
@@ -38,6 +39,14 @@ beforeEach(async () => {
   service = {
     getStatus: vi.fn().mockResolvedValue(STATUS),
     runAction: vi.fn().mockResolvedValue({ ok: true })
+  }
+  history = {
+    query: vi.fn((range: unknown) => ({
+      range: range as '24h',
+      points: [],
+      incidents: [],
+      now: 1_700_000_000_000
+    }))
   }
   staticDir = mkdtempSync(join(tmpdir(), 'bento-agent-'))
   writeFileSync(join(staticDir, 'index.html'), '<!doctype html><title>Bento</title>')
@@ -49,6 +58,7 @@ beforeEach(async () => {
   refusals = []
   const server = createAgentServer({
     service,
+    history,
     auth: { allowedLogin: LOGIN },
     staticDir,
     onRefused: (line) => refusals.push(line)
@@ -141,6 +151,71 @@ describe('GET /api/status', () => {
     expect(res.status).toBe(502)
     expect(JSON.parse(res.text)).toEqual({ error: 'Lecture de bento impossible.' })
     expect(res.text).not.toContain('boom')
+  })
+})
+
+describe('GET /api/history', () => {
+  it('answers each fixed range from the history, never cached', async () => {
+    for (const range of ['1h', '24h', '7d']) {
+      const res = await request('GET', `/api/history?range=${range}`, authed)
+      expect(res.status).toBe(200)
+      expect(res.headers['content-type']).toMatch(/^application\/json/)
+      expect(res.headers['cache-control']).toBe('no-store')
+      expect(JSON.parse(res.text)).toEqual({
+        range,
+        points: [],
+        incidents: [],
+        now: 1_700_000_000_000
+      })
+      expect(history.query).toHaveBeenLastCalledWith(range)
+    }
+  })
+
+  it('answers 400 for a missing or unknown range, without reading the history', async () => {
+    for (const query of ['', '?range=', '?range=30d', '?range=1h&range=7d', '?range=__proto__']) {
+      const res = await request('GET', `/api/history${query}`, authed)
+      expect(res.status).toBe(400)
+    }
+    expect(history.query).not.toHaveBeenCalled()
+  })
+
+  it('answers 403 without the Tailscale login', async () => {
+    expect((await request('GET', '/api/history?range=1h', {})).status).toBe(403)
+    expect(history.query).not.toHaveBeenCalled()
+  })
+
+  it('answers 405 for a POST', async () => {
+    const res = await request('POST', '/api/history?range=1h', actionHeaders, '{}')
+    expect(res.status).not.toBe(200)
+    expect(history.query).not.toHaveBeenCalled()
+  })
+
+  it('answers 500 with a generic message if the history throws', async () => {
+    vi.mocked(history.query).mockImplementation(() => {
+      throw new Error('internal detail')
+    })
+    const res = await request('GET', '/api/history?range=1h', authed)
+    expect(res.status).toBe(500)
+    expect(res.text).not.toContain('internal detail')
+  })
+
+  it('answers 500 when the history has nothing to answer', async () => {
+    vi.mocked(history.query).mockReturnValue(null)
+    expect((await request('GET', '/api/history?range=1h', authed)).status).toBe(500)
+  })
+
+  it('is not served at all without a history', async () => {
+    const bare = createAgentServer({ service, auth: { allowedLogin: LOGIN } })
+    await new Promise<void>((resolve) => bare.listen(0, '127.0.0.1', resolve))
+    const port = (bare.address() as AddressInfo).port
+    const saved = base
+    base = `http://127.0.0.1:${port}`
+    try {
+      expect((await request('GET', '/api/history?range=1h', authed)).status).toBe(404)
+    } finally {
+      base = saved
+      await new Promise<void>((resolve) => bare.close(() => resolve()))
+    }
   })
 })
 

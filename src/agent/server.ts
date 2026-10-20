@@ -1,15 +1,23 @@
 import { readFile, stat } from 'fs/promises'
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'http'
 import { extname, resolve, sep } from 'path'
-import { AGENT_ACTION_PATH, AGENT_STATUS_PATH } from '@shared/agent'
+import { AGENT_ACTION_PATH, AGENT_HISTORY_PATH, AGENT_STATUS_PATH } from '@shared/agent'
+import { isHistoryRange, type HistoryResult } from '@shared/history'
 import { authorize, describeRefusal, type AuthOptions } from './auth'
 import type { AgentService } from './service'
 
 /** What the HTTP side may do with the service: read, and run an action. Not start or stop it. */
 export type ServedAgent = Pick<AgentService, 'getStatus' | 'runAction'>
 
+/** What the HTTP side may do with the history: query a fixed range, nothing else. */
+export interface ServedHistory {
+  query(range: unknown): HistoryResult | null
+}
+
 export interface AgentServerOptions {
   service: ServedAgent
+  /** Without it `/api/history` does not exist. */
+  history?: ServedHistory
   auth: AuthOptions
   /** Folder of the built PWA; without it only the API answers. */
   staticDir?: string
@@ -124,6 +132,20 @@ async function handleStatus(res: ServerResponse, service: ServedAgent): Promise<
   }
 }
 
+/** One `range` parameter among the fixed ranges; anything else is refused, never passed on. */
+function handleHistory(res: ServerResponse, history: ServedHistory, params: URLSearchParams): void {
+  const ranges = params.getAll('range')
+  const range = ranges.length === 1 ? ranges[0] : null
+  if (!isHistoryRange(range)) return sendError(res, 400, 'Requête invalide.')
+  try {
+    const result = history.query(range)
+    if (!result) return sendError(res, 500, "L'historique est indisponible.")
+    sendJson(res, 200, result)
+  } catch {
+    sendError(res, 500, "L'historique est indisponible.")
+  }
+}
+
 /** A file of the build, found only inside `root`. */
 async function serveStatic(res: ServerResponse, root: string, rawPath: string): Promise<void> {
   let path: string
@@ -176,8 +198,11 @@ export function createAgentServer(options: AgentServerOptions): Server {
     }
 
     let pathname: string
+    let params: URLSearchParams
     try {
-      pathname = new URL(req.url ?? '/', 'http://agent.invalid').pathname
+      const url = new URL(req.url ?? '/', 'http://agent.invalid')
+      pathname = url.pathname
+      params = url.searchParams
     } catch {
       req.resume()
       return sendError(res, 400, 'Requête invalide.')
@@ -192,6 +217,8 @@ export function createAgentServer(options: AgentServerOptions): Server {
       handleAction(req, res, options.service).catch(fail)
     } else if (method === 'GET' && pathname === AGENT_STATUS_PATH) {
       handleStatus(res, options.service).catch(fail)
+    } else if (method === 'GET' && pathname === AGENT_HISTORY_PATH && options.history) {
+      handleHistory(res, options.history, params)
     } else if (method === 'GET' && root) {
       serveStatic(res, root, pathname).catch(fail)
     } else if (method === 'GET' || method === 'POST') {

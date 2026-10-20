@@ -9,6 +9,8 @@ export const AGENT_HEADER_VALUE = '1'
 
 export const AGENT_STATUS_PATH = '/api/status'
 export const AGENT_ACTION_PATH = '/api/containers/action'
+/** Read-only: `?range=1h|24h|7d`, answered from the history the agent already keeps in memory. */
+export const AGENT_HISTORY_PATH = '/api/history'
 
 export interface AgentStatus {
   /** Server clock (ms since epoch) when the snapshot was read. */
