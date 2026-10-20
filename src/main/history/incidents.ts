@@ -1,6 +1,11 @@
-import { RANGE_MS, type HistoryRange, type Incident, type IncidentKind } from '@shared/history'
+import {
+  RANGE_MS,
+  UNREACHABLE_GRACE_MS,
+  type HistoryRange,
+  type Incident,
+  type IncidentKind
+} from '@shared/history'
 import type { BentoStatus } from '@shared/monitors'
-import { UNREACHABLE_GRACE_MS } from '../notifications/tracker'
 import { RETENTION_MS } from './recorder'
 
 /** Closed incidents kept besides the open ones; a week of a noisy server stays readable. */
@@ -31,6 +36,22 @@ export class IncidentTracker {
 
   get incidents(): readonly Incident[] {
     return this.list
+  }
+
+  /**
+   * A period nobody watched (the agent was stopped, or bento was off) as a closed outage. Only a gap
+   * as long as the grace period counts, like a live outage. True when it was recorded.
+   */
+  recordGap(from: number, to: number): boolean {
+    if (to - from < UNREACHABLE_GRACE_MS) return false
+    this.list.push({
+      key: UNREACHABLE_KEY,
+      kind: 'unreachable',
+      subject: 'bento',
+      startedAt: from,
+      endedAt: to
+    })
+    return true
   }
 
   /** True when an incident was opened, closed or forgotten, so there is something to save. */

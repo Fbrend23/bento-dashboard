@@ -1,7 +1,7 @@
 import { isHistoryRange, type HistoryResult } from '@shared/history'
 import type { BentoStatus, Metrics } from '@shared/monitors'
 import { IncidentTracker, incidentsInRange } from './incidents'
-import { HistoryRecorder, queryPoints, type HistorySample } from './recorder'
+import { BUCKET_MS, HistoryRecorder, queryPoints, type HistorySample } from './recorder'
 import type { HistoryData, HistoryStore } from './store'
 
 export interface HistoryDeps {
@@ -64,6 +64,16 @@ export class History {
       changed = this.recorder.record(sampleFrom(status.metrics, status.updatedAt)) || changed
     }
     if (changed) this.markDirty()
+  }
+
+  /**
+   * Called once when the recorder starts: the time since the last saved point, when nothing was
+   * watching, is an outage. The first run has no previous point, hence nothing to report.
+   */
+  noteGap(): void {
+    const last = this.recorder.points.at(-1)
+    if (!last) return
+    if (this.incidents.recordGap(last.t + BUCKET_MS, this.now())) this.markDirty()
   }
 
   /** `range` comes from the renderer: only the fixed ranges are answered. */

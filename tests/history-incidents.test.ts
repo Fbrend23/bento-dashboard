@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { RANGE_MS, type Incident } from '@shared/history'
+import { RANGE_MS, UNREACHABLE_GRACE_MS, type Incident } from '@shared/history'
 import { IncidentTracker, incidentsInRange } from '../src/main/history/incidents'
 import { RETENTION_MS } from '../src/main/history/recorder'
-import { UNREACHABLE_GRACE_MS } from '../src/main/notifications/tracker'
 import { disk, metrics, service, status, tailscale } from './helpers/status'
 
 const T0 = Date.UTC(2026, 9, 16, 12, 0, 0)
@@ -328,5 +327,42 @@ describe('incidentsInRange', () => {
     const copy = structuredClone(list)
     incidentsInRange(list, '1h', NOW)
     expect(list).toEqual(copy)
+  })
+})
+
+describe('gaps (the agent was not running)', () => {
+  const grace = UNREACHABLE_GRACE_MS / 1000
+
+  it('records a gap as a closed unreachable incident', () => {
+    expect(tracker.recordGap(at(0), at(600))).toBe(true)
+    expect(tracker.incidents).toEqual([
+      {
+        key: 'unreachable:bento',
+        kind: 'unreachable',
+        subject: 'bento',
+        startedAt: at(0),
+        endedAt: at(600)
+      }
+    ])
+  })
+
+  it('ignores a gap shorter than the grace period', () => {
+    expect(tracker.recordGap(at(0), at(grace - 1))).toBe(false)
+    expect(tracker.incidents).toEqual([])
+  })
+
+  it('records a gap exactly as long as the grace period', () => {
+    expect(tracker.recordGap(at(0), at(grace))).toBe(true)
+  })
+
+  it('ignores a gap that does not go forward', () => {
+    expect(tracker.recordGap(at(600), at(0))).toBe(false)
+  })
+
+  it('forgets a gap older than the retention, like any closed incident', () => {
+    const now = at(0) + RETENTION_MS * 2
+    tracker.recordGap(at(0), at(600))
+    tracker.update(up(), now)
+    expect(tracker.incidents).toEqual([])
   })
 })

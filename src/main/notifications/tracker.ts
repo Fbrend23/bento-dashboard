@@ -1,6 +1,7 @@
 import type { Settings } from '@shared/settings'
 import type { BentoStatus, ServiceStatus } from '@shared/monitors'
 import { formatPercent, translateServiceDetail } from '@shared/format'
+import { UNREACHABLE_GRACE_MS } from '@shared/history'
 import { inQuietHours } from './quiet-hours'
 
 export interface AppNotification {
@@ -10,8 +11,7 @@ export interface AppNotification {
   body: string
 }
 
-/** A brief drop of the connection is normal; only a lasting one deserves a notification. */
-export const UNREACHABLE_GRACE_MS = 60_000
+export { UNREACHABLE_GRACE_MS }
 
 const isDown = (s: ServiceStatus): boolean => s.level === 'down' || s.level === 'absent'
 const isActive = (s: ServiceStatus): boolean => s.level === 'ok' || s.level === 'degraded'

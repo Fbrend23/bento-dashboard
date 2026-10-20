@@ -255,3 +255,58 @@ describe('createHistory (query)', () => {
     expect(history.query('1h')).toEqual({ range: '1h', points: [], incidents: [], now: clock })
   })
 })
+
+describe('createHistory (gap since the last run)', () => {
+  const saved = (minutes: number): HistoryData => ({
+    points: [
+      {
+        t: T0 + minutes * BUCKET_MS,
+        cpu: 10,
+        memory: 20,
+        swap: 0,
+        down: null,
+        up: null,
+        temperature: null,
+        disks: {}
+      } satisfies HistoryPoint
+    ],
+    incidents: []
+  })
+
+  it('turns the time since the last saved point into a closed outage', async () => {
+    const { history } = await make(fakeStore(saved(0)))
+    clock = T0 + 10 * BUCKET_MS
+    history.noteGap()
+    expect(query(history).incidents).toEqual([
+      {
+        key: 'unreachable:bento',
+        kind: 'unreachable',
+        subject: 'bento',
+        startedAt: T0 + BUCKET_MS,
+        endedAt: T0 + 10 * BUCKET_MS
+      }
+    ])
+  })
+
+  it('records nothing without a previous point (first run)', async () => {
+    const { history } = await make()
+    history.noteGap()
+    expect(query(history).incidents).toEqual([])
+  })
+
+  it('records nothing for a restart shorter than the grace period', async () => {
+    const { history } = await make(fakeStore(saved(0)))
+    clock = T0 + BUCKET_MS + 30_000
+    history.noteGap()
+    expect(query(history).incidents).toEqual([])
+  })
+
+  it('is saved like any other change', async () => {
+    const { history, store } = await make(fakeStore(saved(0)))
+    clock = T0 + 10 * BUCKET_MS
+    history.noteGap()
+    await vi.advanceTimersByTimeAsync(60_000)
+    expect(store.saves).toHaveLength(1)
+    expect(store.saves[0].incidents).toHaveLength(1)
+  })
+})

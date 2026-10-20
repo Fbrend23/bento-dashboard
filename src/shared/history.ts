@@ -30,6 +30,9 @@ export interface HistoryPoint {
   disks: Record<string, number>
 }
 
+/** A brief drop of the connection is normal; only a lasting one is an incident or a notification. */
+export const UNREACHABLE_GRACE_MS = 60_000
+
 export const INCIDENT_KINDS = ['service-down', 'unreachable', 'disk-full'] as const
 
 export type IncidentKind = (typeof INCIDENT_KINDS)[number]
