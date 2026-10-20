@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { parseRepository, planRelease } from '../scripts/release-plan.mjs'
+import { notesFileFor, parseRepository, planRelease } from '../scripts/release-plan.mjs'
+
+const NOTES_FILE = notesFileFor
 
 const VERSION = '1.0.2'
 const FILES = [
@@ -36,10 +38,27 @@ describe('planRelease', () => {
         '--repo',
         'Fbrend23/bento-dashboard',
         '--title',
-        'v1.0.2',
+        'Bento Dashboard 1.0.2',
         '--generate-notes'
       ]
     })
+  })
+
+  it('uses the written notes of the version when there are some', () => {
+    const plan = planRelease(input({ notesFile: 'release-notes/1.0.2.md' }))
+    expect(plan.ok).toBe(true)
+    expect(plan.args.slice(-4)).toEqual([
+      '--title',
+      'Bento Dashboard 1.0.2',
+      '--notes-file',
+      'release-notes/1.0.2.md'
+    ])
+    expect(plan.args).not.toContain('--generate-notes')
+  })
+
+  it('names the notes file after the validated version, never after a free path', () => {
+    expect(planRelease(input({ version: '1.0.2; rm -rf /', notesFile: 'x' })).ok).toBe(false)
+    expect(NOTES_FILE('1.0.2')).toBe('release-notes/1.0.2.md')
   })
 
   it('never uploads anything else from dist', () => {

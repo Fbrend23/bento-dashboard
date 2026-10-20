@@ -4,6 +4,11 @@
 const SEMVER = /^\d+\.\d+\.\d+$/
 const REPO = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/
 
+/** Where the French release notes of a version live (the version comes from package.json). */
+export function notesFileFor(version) {
+  return `release-notes/${version}.md`
+}
+
 /** "git+https://github.com/owner/repo.git" (or ssh, or plain) -> "owner/repo", else null. */
 export function parseRepository(url) {
   if (typeof url !== 'string') return null
@@ -18,11 +23,20 @@ export function parseRepository(url) {
  *   distFiles: string[],
  *   latestYml: string | null,
  *   remoteTags: string[],
- *   releaseExists: boolean
+ *   releaseExists: boolean,
+ *   notesFile?: string | null
  * }} input
  * @returns {{ ok: true, tag: string, args: string[] } | { ok: false, error: string }}
  */
-export function planRelease({ version, repo, distFiles, latestYml, remoteTags, releaseExists }) {
+export function planRelease({
+  version,
+  repo,
+  distFiles,
+  latestYml,
+  remoteTags,
+  releaseExists,
+  notesFile = null
+}) {
   if (!SEMVER.test(version)) return fail(`Version invalide dans package.json : "${version}".`)
   if (!REPO.test(repo)) return fail(`Dépôt invalide : "${repo}".`)
 
@@ -64,8 +78,9 @@ export function planRelease({ version, repo, distFiles, latestYml, remoteTags, r
       '--repo',
       repo,
       '--title',
-      tag,
-      '--generate-notes'
+      `Bento Dashboard ${version}`,
+      // The notes written for this version, else GitHub's bare changelog link.
+      ...(notesFile ? ['--notes-file', notesFile] : ['--generate-notes'])
     ]
   }
 }

@@ -4,7 +4,7 @@
 
 import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
-import { parseRepository, planRelease } from './release-plan.mjs'
+import { notesFileFor, parseRepository, planRelease } from './release-plan.mjs'
 
 const pkg = JSON.parse(readFileSync('package.json', 'utf-8'))
 const repo = parseRepository(
@@ -32,7 +32,9 @@ function releaseExists(tag) {
 }
 
 const tag = `v${pkg.version}`
+const notesFile = notesFileFor(pkg.version)
 const plan = planRelease({
+  notesFile: existsSync(notesFile) ? notesFile : null,
   version: pkg.version,
   repo: repo ?? '',
   distFiles: existsSync('dist') ? readdirSync('dist') : [],
