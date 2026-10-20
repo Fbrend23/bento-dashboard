@@ -12,8 +12,42 @@ describe('parseAgentConfig', () => {
       containerLabels: {},
       stackLabels: {},
       hiddenContainers: [],
-      diskThresholdPercent: 85
+      diskThresholdPercent: 85,
+      discordWebhookUrl: undefined
     })
+  })
+
+  it('reads a Discord webhook url', () => {
+    const url = 'https://discord.com/api/webhooks/123456789/abc-DEF_123'
+    expect(
+      parseAgentConfig(JSON.stringify({ ...minimal, discordWebhookUrl: url })).discordWebhookUrl
+    ).toBe(url)
+  })
+
+  it('refuses anything but a Discord webhook url, without echoing the value', () => {
+    for (const discordWebhookUrl of [
+      '',
+      3,
+      null,
+      'http://discord.com/api/webhooks/1/abc',
+      'https://evil.example/api/webhooks/1/abc',
+      'https://discord.com.evil.example/api/webhooks/1/abc',
+      'https://discord.com/api/webhooks/1/abc?wait=true',
+      'https://discord.com/api/webhooks/x/abc',
+      'https://user@discord.com/api/webhooks/1/abc'
+    ]) {
+      let message = ''
+      try {
+        parseAgentConfig(JSON.stringify({ ...minimal, discordWebhookUrl }))
+      } catch (error) {
+        expect(error).toBeInstanceOf(AgentConfigError)
+        message = (error as Error).message
+      }
+      expect(message).toContain('discordWebhookUrl')
+      if (typeof discordWebhookUrl === 'string' && discordWebhookUrl) {
+        expect(message).not.toContain(discordWebhookUrl)
+      }
+    }
   })
 
   it('reads every optional field', () => {

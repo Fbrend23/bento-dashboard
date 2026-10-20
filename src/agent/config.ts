@@ -14,6 +14,8 @@ export interface AgentConfig {
   hiddenContainers: string[]
   /** Used percentage above which a disk is an incident in the history; as in the desktop settings. */
   diskThresholdPercent: number
+  /** Where the agent announces a container or tailscaled going down; none means no notification. */
+  discordWebhookUrl: string | undefined
 }
 
 export const DEFAULT_PORT = 8484
@@ -71,6 +73,18 @@ function diskThreshold(raw: unknown): number {
   return raw
 }
 
+function discordWebhook(raw: unknown): string | undefined {
+  if (raw === undefined) return undefined
+  // The url is a secret: the message names the field, never the value.
+  if (
+    typeof raw !== 'string' ||
+    !/^https:\/\/(discord|discordapp)\.com\/api\/webhooks\/\d+\/[A-Za-z0-9_-]+$/.test(raw)
+  ) {
+    throw new AgentConfigError('discordWebhookUrl must be a Discord webhook url')
+  }
+  return raw
+}
+
 /** Validates the config text. Anything wrong stops the agent: it must never run half-configured. */
 export function parseAgentConfig(text: string): AgentConfig {
   let raw: unknown
@@ -90,6 +104,7 @@ export function parseAgentConfig(text: string): AgentConfig {
     containerLabels: labels(raw.containerLabels, 'containerLabels'),
     stackLabels: labels(raw.stackLabels, 'stackLabels'),
     hiddenContainers: hidden(raw.hiddenContainers),
-    diskThresholdPercent: diskThreshold(raw.diskThresholdPercent)
+    diskThresholdPercent: diskThreshold(raw.diskThresholdPercent),
+    discordWebhookUrl: discordWebhook(raw.discordWebhookUrl)
   }
 }
