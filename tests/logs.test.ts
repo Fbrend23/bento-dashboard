@@ -122,6 +122,19 @@ describe('describeCommandFailure', () => {
     ).toBe('Règle sudoers manquante pour bento-dash.')
   })
 
+  it('reads the reason in stdout too: container logs run with `2>&1`', () => {
+    expect(
+      describeCommandFailure({ stdout: 'sudo: a password is required\n', stderr: '', code: 1 })
+    ).toBe('Règle sudoers manquante pour bento-dash.')
+    expect(
+      describeCommandFailure({
+        stdout: 'Error response from daemon: No such container: jellyfin\n',
+        stderr: '',
+        code: 1
+      })
+    ).toBe('Conteneur introuvable.')
+  })
+
   it('explains a timeout (exit code 124 from `timeout`)', () => {
     expect(describeCommandFailure({ stdout: '', stderr: '', code: 124 })).toBe(
       'Bento a mis trop de temps à répondre.'

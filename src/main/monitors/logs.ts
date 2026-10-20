@@ -27,9 +27,15 @@ export function parseLogs(output: string): string[] {
   return lines.slice(-MAX_LOG_LINES).map(clean)
 }
 
+// A container's logs run with `2>&1`, so sudo's and docker's complaints arrive on stdout.
+const failureText = (result: ExecResult): string => `${result.stderr}
+${result.stdout}`
+
 /** True when sudo refused the command: no matching sudoers rule for bento-dash. */
 export function isSudoersRefusal(result: ExecResult): boolean {
-  return /a password is required|is not allowed to execute|may not run sudo/i.test(result.stderr)
+  return /a password is required|is not allowed to execute|may not run sudo/i.test(
+    failureText(result)
+  )
 }
 
 /** A readable French reason for a failed command; never the raw stderr. */
@@ -38,7 +44,7 @@ export function describeCommandFailure(result: ExecResult): string {
     return 'Règle sudoers manquante pour bento-dash.'
   }
   if (result.code === 124) return 'Bento a mis trop de temps à répondre.'
-  if (/no such container/i.test(result.stderr)) return 'Conteneur introuvable.'
+  if (/no such container/i.test(failureText(result))) return 'Conteneur introuvable.'
   return result.code === null
     ? 'La commande a échoué.'
     : `La commande a échoué (code ${result.code}).`
