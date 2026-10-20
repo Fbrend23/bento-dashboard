@@ -18,6 +18,8 @@ export interface HistoryData {
 const MAX_POINTS = RETENTION_MS / BUCKET_MS
 const MAX_INCIDENTS = 1000
 const MAX_TEXT = 300
+/** Disks of one point: a handful in practice; more is a damaged or hostile file. */
+const MAX_DISKS = 64
 const FIELDS = ['cpu', 'memory', 'swap', 'down', 'up', 'temperature'] as const
 
 const isNumber = (value: unknown): value is number =>
@@ -37,9 +39,11 @@ function parsePoint(raw: unknown): HistoryPoint | null {
 
   const rawDisks = record.disks
   if (typeof rawDisks !== 'object' || rawDisks === null || Array.isArray(rawDisks)) return null
+  const entries = Object.entries(rawDisks)
+  if (entries.length > MAX_DISKS) return null
   const disks: Record<string, number> = {}
-  for (const [mount, percent] of Object.entries(rawDisks)) {
-    if (!isNumber(percent)) return null
+  for (const [mount, percent] of entries) {
+    if (mount.length > MAX_TEXT || !isNumber(percent)) return null
     disks[mount] = percent
   }
 

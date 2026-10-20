@@ -127,6 +127,17 @@ describe('parseHistory', () => {
     expect(parsed.incidents.length).toBeLessThanOrEqual(1000)
   })
 
+  it('drops a point with too many disks or a mount point that is too long', () => {
+    const many = Object.fromEntries(Array.from({ length: 65 }, (_, i) => [`/mnt/d${i}`, 10]))
+    const kept = point(180_000, { disks: Object.fromEntries(Object.entries(many).slice(0, 64)) })
+    const long = point(240_000, { disks: { ['/' + 'a'.repeat(300)]: 10 } })
+    const raw = {
+      points: [point(60_000), point(120_000, { disks: many }), kept, long],
+      incidents: []
+    }
+    expect(parseHistory(raw).points.map((p) => p.t)).toEqual([60_000, 180_000])
+  })
+
   it('keeps the most recent points when it has to cap', () => {
     const points = Array.from({ length: 12_000 }, (_, i) => point((i + 1) * 60_000))
     expect(parseHistory({ points, incidents: [] }).points.at(-1)?.t).toBe(12_000 * 60_000)
