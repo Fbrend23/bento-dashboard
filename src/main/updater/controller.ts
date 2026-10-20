@@ -14,6 +14,8 @@ export interface UpdateControllerDeps {
   updater: UpdaterLike
   /** Updates only exist in the installed app, not in `npm run dev`. */
   isPackaged: boolean
+  /** Read at each event, so a change in the settings applies without a restart. */
+  autoUpdate: () => boolean
   currentVersion: string
   now?: () => number
 }
@@ -44,8 +46,9 @@ function describeUpdateError(error: unknown): string {
 
 /**
  * Checks GitHub Releases for a new version and only offers it: the download starts when the user
- * agrees, and the installation is left to them (or to the next quit). A failing check is a normal
- * state: it is reported, never retried in a loop.
+ * agrees, and the installation is left to them (or to the next quit). Unless the user allowed
+ * automatic updates in the settings: then both steps follow on their own. A failing check is a
+ * normal state: it is reported, never retried in a loop.
  */
 export class UpdateController {
   private current: UpdateState
@@ -70,28 +73,30 @@ export class UpdateController {
     // download is installed by their button or, failing that, on quit.
     updater.autoDownload = false
     updater.autoInstallOnAppQuit = true
-    updater.on('update-available', (info) =>
+    updater.on('update-available', (info) => {
       this.set({
         phase: 'available',
         version: (info as { version: string }).version,
         percent: null,
         error: null
       })
-    )
+      if (deps.autoUpdate()) void this.download()
+    })
     updater.on('download-progress', (progress) =>
       this.set({
         phase: 'downloading',
         percent: Math.round((progress as { percent: number }).percent)
       })
     )
-    updater.on('update-downloaded', (info) =>
+    updater.on('update-downloaded', (info) => {
       this.set({
         phase: 'ready',
         version: (info as { version: string }).version,
         percent: null,
         error: null
       })
-    )
+      if (deps.autoUpdate()) this.install()
+    })
     updater.on('update-not-available', () =>
       this.set({ phase: 'up-to-date', checkedAt: this.now(), error: null })
     )

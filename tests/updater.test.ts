@@ -35,11 +35,13 @@ function fakeUpdater(): FakeUpdater {
 
 let updater: FakeUpdater
 let now: number
+let autoUpdate: boolean
 
 function create(overrides: { isPackaged?: boolean } = {}): UpdateController {
   return new UpdateController({
     updater,
     isPackaged: overrides.isPackaged ?? true,
+    autoUpdate: () => autoUpdate,
     currentVersion: '1.0.0',
     now: () => now
   })
@@ -49,6 +51,7 @@ beforeEach(() => {
   vi.useFakeTimers()
   updater = fakeUpdater()
   now = 1_000
+  autoUpdate = false
 })
 
 afterEach(() => {
@@ -230,6 +233,46 @@ describe('UpdateController download()', () => {
     await controller.check()
     expect(updater.checkForUpdates).not.toHaveBeenCalled()
     expect(controller.state).toMatchObject({ phase: 'available', version: '1.1.0' })
+  })
+})
+
+describe('UpdateController with automatic updates allowed', () => {
+  beforeEach(() => {
+    autoUpdate = true
+  })
+
+  it('downloads a found update without asking', async () => {
+    const controller = create()
+    updater.emit('update-available', { version: '1.1.0' })
+    await vi.advanceTimersByTimeAsync(0)
+    expect(updater.downloadUpdate).toHaveBeenCalledOnce()
+    expect(controller.state).toMatchObject({ phase: 'downloading', version: '1.1.0' })
+  })
+
+  it('restarts on the downloaded version without asking', () => {
+    create()
+    updater.emit('update-downloaded', { version: '1.1.0' })
+    expect(updater.quitAndInstall).toHaveBeenCalledOnce()
+  })
+
+  it('follows the setting as it is now, not as it was at startup', async () => {
+    autoUpdate = false
+    const controller = create()
+    autoUpdate = true
+    updater.emit('update-available', { version: '1.1.0' })
+    await vi.advanceTimersByTimeAsync(0)
+    expect(updater.downloadUpdate).toHaveBeenCalledOnce()
+    expect(controller.state.phase).toBe('downloading')
+  })
+
+  it('still waits for the user when the setting is off', async () => {
+    autoUpdate = false
+    create()
+    updater.emit('update-available', { version: '1.1.0' })
+    updater.emit('update-downloaded', { version: '1.1.0' })
+    await vi.advanceTimersByTimeAsync(0)
+    expect(updater.downloadUpdate).not.toHaveBeenCalled()
+    expect(updater.quitAndInstall).not.toHaveBeenCalled()
   })
 })
 

@@ -135,6 +135,7 @@ const parsers: { [K in keyof Settings]: (value: unknown) => Parsed<Settings[K]> 
   },
   notifyUnhealthy: yesNo,
   launchAtStartup: yesNo,
+  autoUpdate: yesNo,
   notifyRecovery: yesNo,
   notifyCpu: yesNo,
   cpuThresholdPercent: (value) => integerInRange(value, 50, 100),

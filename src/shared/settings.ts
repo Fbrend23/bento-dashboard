@@ -24,6 +24,8 @@ export interface Settings {
   excludedMounts: string[]
   notifyUnhealthy: boolean
   launchAtStartup: boolean
+  /** Download a new version as soon as it is found and restart on it, without asking. */
+  autoUpdate: boolean
   /** Also notify when a problem that was notified is over (service back, bento reachable…). */
   notifyRecovery: boolean
   notifyCpu: boolean
@@ -59,6 +61,7 @@ export const DEFAULT_SETTINGS: Settings = {
   excludedMounts: ['/boot/efi'],
   notifyUnhealthy: true,
   launchAtStartup: false,
+  autoUpdate: false,
   notifyRecovery: true,
   notifyCpu: true,
   cpuThresholdPercent: 90,

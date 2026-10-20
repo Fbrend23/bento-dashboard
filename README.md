@@ -178,6 +178,10 @@ télécharge rien sans votre accord : un bandeau signale la version disponible a
 « Télécharger ». Une fois téléchargée, il propose « Redémarrer pour installer » ; sinon la mise à
 jour s'installe à la fermeture. **Réglages, Mises à jour** permet de vérifier à la demande.
 
+L'option **Télécharger et installer les mises à jour automatiquement** (Réglages, désactivée par
+défaut) supprime ces deux étapes : la version est téléchargée dès qu'elle est trouvée, puis l'app
+redémarre toute seule pour l'installer.
+
 Hors ligne ou si GitHub limite les requêtes, l'application l'indique dans les réglages et
 réessaie à la prochaine échéance, sans boucle d'erreurs.
 

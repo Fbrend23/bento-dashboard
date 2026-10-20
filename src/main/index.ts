@@ -212,6 +212,7 @@ async function main(): Promise<void> {
   const updateController = new UpdateController({
     updater: createElectronUpdater(),
     isPackaged: app.isPackaged,
+    autoUpdate: () => service.getSettings().autoUpdate,
     currentVersion: app.getVersion()
   })
   registerIpc(service, updateController, appUrl)
