@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest'
+import type { AgentStatus } from '@shared/agent'
 import type { ExecResult } from '../src/main/ssh/connection'
 import { containerActionCommand } from '../src/main/ssh/commands'
 import { SNAPSHOT_COMMAND } from '../src/main/monitors/snapshot'
@@ -222,5 +223,92 @@ describe('guardExec', () => {
     for (const [command] of run.mock.calls) {
       expect(isAgentCommand(command as string)).toBe(true)
     }
+  })
+})
+
+describe('disk threshold', () => {
+  it('uses the one from the config for the alerts and the history', async () => {
+    build({ diskThresholdPercent: 70 })
+    const { metrics } = await service.getStatus()
+    expect(metrics.diskThresholdPercent).toBe(70)
+  })
+})
+
+describe('polling loop (feeds the history)', () => {
+  let onStatus: Mock<(status: AgentStatus) => void>
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    onStatus = vi.fn()
+    build({ onStatus, pollMs: 30_000 })
+  })
+
+  afterEach(() => {
+    service.stop()
+    vi.useRealTimers()
+  })
+
+  it('reads at once when started, then every interval', async () => {
+    service.start()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(run).toHaveBeenCalledTimes(1)
+    expect(onStatus).toHaveBeenCalledTimes(1)
+    clock += 30_000
+    await vi.advanceTimersByTimeAsync(30_000)
+    expect(run).toHaveBeenCalledTimes(2)
+    expect(onStatus).toHaveBeenCalledTimes(2)
+  })
+
+  it('hands over the snapshot it just read', async () => {
+    service.start()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(onStatus.mock.calls[0][0]).toMatchObject({ updatedAt: NOW })
+    expect(onStatus.mock.calls[0][0].metrics.disks.length).toBeGreaterThan(0)
+  })
+
+  it('ignores a failed read and tries again at the next interval', async () => {
+    run.mockRejectedValueOnce(new Error('Command timed out after 20000 ms'))
+    service.start()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(onStatus).not.toHaveBeenCalled()
+    clock += 30_000
+    await vi.advanceTimersByTimeAsync(30_000)
+    expect(onStatus).toHaveBeenCalledTimes(1)
+  })
+
+  it('stops reading once stopped', async () => {
+    service.start()
+    await vi.advanceTimersByTimeAsync(0)
+    service.stop()
+    await vi.advanceTimersByTimeAsync(120_000)
+    expect(run).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not start a second loop when started twice', async () => {
+    service.start()
+    service.start()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(run).toHaveBeenCalledTimes(1)
+    clock += 30_000
+    await vi.advanceTimersByTimeAsync(30_000)
+    expect(run).toHaveBeenCalledTimes(2)
+  })
+
+  it('shares one read between the loop and a request of the phone', async () => {
+    service.start()
+    await service.getStatus()
+    expect(run).toHaveBeenCalledTimes(1)
+  })
+
+  it('also hands over what a request of the phone made it read', async () => {
+    await service.getStatus()
+    expect(onStatus).toHaveBeenCalledTimes(1)
+  })
+
+  it('still answers when the listener throws', async () => {
+    onStatus.mockImplementation(() => {
+      throw new Error('disk full')
+    })
+    await expect(service.getStatus()).resolves.toMatchObject({ updatedAt: NOW })
   })
 })

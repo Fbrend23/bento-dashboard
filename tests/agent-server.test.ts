@@ -4,8 +4,7 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AgentStatus } from '../src/shared/agent'
-import { createAgentServer } from '../src/agent/server'
-import type { AgentService } from '../src/agent/service'
+import { createAgentServer, type ServedAgent } from '../src/agent/server'
 import { metrics } from './helpers/status'
 
 const LOGIN = 'owner@example.com'
@@ -29,7 +28,7 @@ const STATUS: AgentStatus = {
   metrics: metrics()
 }
 
-let service: AgentService
+let service: ServedAgent
 let staticDir: string
 let close: () => Promise<void>
 let base: string

@@ -24,28 +24,41 @@ export interface AgentServiceDeps {
   exec: Exec
   labels: Pick<Settings, 'containerLabels' | 'stackLabels'>
   hiddenContainers: string[]
+  /** Disk alert threshold; the desktop default when absent. */
+  diskThresholdPercent?: number
+  /** Told about every snapshot that was read, by the loop or for a request. Never for a failure. */
+  onStatus?: (status: AgentStatus) => void
+  /** Delay between two reads of the loop. */
+  pollMs?: number
   now?: () => number
   /** How long a snapshot answers the requests that follow it. */
   cacheMs?: number
 }
 
 export interface AgentService {
+  /** Starts reading bento on its own (now, then every interval), so the history has no hole. */
+  start(): void
+  stop(): void
   getStatus(): Promise<AgentStatus>
   runAction(action: unknown, container: unknown): Promise<ContainerActionResult>
 }
 
 const DEFAULT_CACHE_MS = 5000
+const DEFAULT_POLL_MS = 30_000
 
 /**
- * What the phone sees. There is no polling loop: bento is only read when the phone asks, and
- * a snapshot is shared for a few seconds between requests.
+ * What the phone sees, and what the history records. Bento is read by the loop (`start`) and
+ * whenever the phone asks; a snapshot is shared for a few seconds between those, and
+ * simultaneous readers share one read.
  */
 export function createAgentService(deps: AgentServiceDeps): AgentService {
   const exec = guardExec(deps.exec)
   const now = deps.now ?? Date.now
   const cacheMs = deps.cacheMs ?? DEFAULT_CACHE_MS
+  const pollMs = deps.pollMs ?? DEFAULT_POLL_MS
   const settings: Settings = {
     ...DEFAULT_SETTINGS,
+    diskThresholdPercent: deps.diskThresholdPercent ?? DEFAULT_SETTINGS.diskThresholdPercent,
     containerLabels: deps.labels.containerLabels,
     stackLabels: deps.labels.stackLabels,
     hiddenContainers: deps.hiddenContainers
@@ -78,6 +91,11 @@ export function createAgentService(deps: AgentServiceDeps): AgentService {
       metrics: snapshot.metrics
     }
     cache = { status, at }
+    try {
+      deps.onStatus?.(status)
+    } catch {
+      // The listener (the history) must not make a read fail.
+    }
     return status
   }
 
@@ -122,5 +140,22 @@ export function createAgentService(deps: AgentServiceDeps): AgentService {
     )
   }
 
-  return { getStatus, runAction }
+  let timer: ReturnType<typeof setInterval> | null = null
+
+  function start(): void {
+    if (timer) return
+    const poll = (): void => {
+      // A failed read is not an event: the next one tries again, and the history shows a hole.
+      refresh().catch(() => {})
+    }
+    poll()
+    timer = setInterval(poll, pollMs)
+  }
+
+  function stop(): void {
+    if (timer) clearInterval(timer)
+    timer = null
+  }
+
+  return { start, stop, getStatus, runAction }
 }

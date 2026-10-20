@@ -1,4 +1,5 @@
 import { isContainerName } from '@shared/actions'
+import { DEFAULT_SETTINGS } from '@shared/settings'
 
 /** `/etc/bento-agent/config.json` on bento: root-owned, read by the agent at start. */
 export interface AgentConfig {
@@ -11,6 +12,8 @@ export interface AgentConfig {
   containerLabels: Record<string, string>
   stackLabels: Record<string, string>
   hiddenContainers: string[]
+  /** Used percentage above which a disk is an incident in the history; as in the desktop settings. */
+  diskThresholdPercent: number
 }
 
 export const DEFAULT_PORT = 8484
@@ -60,6 +63,14 @@ function port(raw: unknown): number {
   return raw
 }
 
+function diskThreshold(raw: unknown): number {
+  if (raw === undefined) return DEFAULT_SETTINGS.diskThresholdPercent
+  if (typeof raw !== 'number' || !Number.isInteger(raw) || raw < 1 || raw > 100) {
+    throw new AgentConfigError('diskThresholdPercent must be an integer between 1 and 100')
+  }
+  return raw
+}
+
 /** Validates the config text. Anything wrong stops the agent: it must never run half-configured. */
 export function parseAgentConfig(text: string): AgentConfig {
   let raw: unknown
@@ -78,6 +89,7 @@ export function parseAgentConfig(text: string): AgentConfig {
     port: port(raw.port),
     containerLabels: labels(raw.containerLabels, 'containerLabels'),
     stackLabels: labels(raw.stackLabels, 'stackLabels'),
-    hiddenContainers: hidden(raw.hiddenContainers)
+    hiddenContainers: hidden(raw.hiddenContainers),
+    diskThresholdPercent: diskThreshold(raw.diskThresholdPercent)
   }
 }

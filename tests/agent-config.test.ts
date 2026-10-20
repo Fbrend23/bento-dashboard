@@ -11,7 +11,8 @@ describe('parseAgentConfig', () => {
       port: 8484,
       containerLabels: {},
       stackLabels: {},
-      hiddenContainers: []
+      hiddenContainers: [],
+      diskThresholdPercent: 85
     })
   })
 
@@ -23,7 +24,8 @@ describe('parseAgentConfig', () => {
         port: 9000,
         containerLabels: { jellyfin: 'Jellyfin' },
         stackLabels: { media: 'Médias' },
-        hiddenContainers: ['helper-1']
+        hiddenContainers: ['helper-1'],
+        diskThresholdPercent: 70
       })
     )
     expect(config).toMatchObject({
@@ -31,7 +33,8 @@ describe('parseAgentConfig', () => {
       port: 9000,
       containerLabels: { jellyfin: 'Jellyfin' },
       stackLabels: { media: 'Médias' },
-      hiddenContainers: ['helper-1']
+      hiddenContainers: ['helper-1'],
+      diskThresholdPercent: 70
     })
   })
 
@@ -50,6 +53,14 @@ describe('parseAgentConfig', () => {
   it('refuses a bad port', () => {
     for (const port of [0, 80, 1023, 65536, 8484.5, '8484', null]) {
       expect(() => parseAgentConfig(JSON.stringify({ ...minimal, port }))).toThrow(AgentConfigError)
+    }
+  })
+
+  it('refuses a disk threshold that is not a whole percentage', () => {
+    for (const diskThresholdPercent of [0, 101, 85.5, '85', null]) {
+      expect(() => parseAgentConfig(JSON.stringify({ ...minimal, diskThresholdPercent }))).toThrow(
+        AgentConfigError
+      )
     }
   })
 

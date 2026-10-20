@@ -10,6 +10,10 @@ Type=simple
 User=bento-dash
 Environment=BENTO_AGENT_CONFIG=/etc/bento-agent/config.json
 Environment=BENTO_AGENT_STATIC=/opt/bento-agent/public
+# L'historique (relevés d'une minute sur 7 jours, incidents) que l'app de bureau lit en SSH.
+# StateDirectory crée /var/lib/bento-agent pour bento-dash, et reste inscriptible malgré ProtectSystem.
+StateDirectory=bento-agent
+Environment=BENTO_AGENT_HISTORY=/var/lib/bento-agent/history.json
 ExecStart=/usr/bin/node /opt/bento-agent/bento-agent.cjs
 Restart=on-failure
 RestartSec=5

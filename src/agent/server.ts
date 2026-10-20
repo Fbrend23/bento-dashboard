@@ -5,8 +5,11 @@ import { AGENT_ACTION_PATH, AGENT_STATUS_PATH } from '@shared/agent'
 import { authorize, describeRefusal, type AuthOptions } from './auth'
 import type { AgentService } from './service'
 
+/** What the HTTP side may do with the service: read, and run an action. Not start or stop it. */
+export type ServedAgent = Pick<AgentService, 'getStatus' | 'runAction'>
+
 export interface AgentServerOptions {
-  service: AgentService
+  service: ServedAgent
   auth: AuthOptions
   /** Folder of the built PWA; without it only the API answers. */
   staticDir?: string
@@ -99,7 +102,7 @@ function parseActionBody(text: string): { action: string; container: string } | 
 async function handleAction(
   req: IncomingMessage,
   res: ServerResponse,
-  service: AgentService
+  service: ServedAgent
 ): Promise<void> {
   const text = await readBody(req)
   if (text === null) return sendError(res, 413, 'Requête trop grande.')
@@ -112,7 +115,7 @@ async function handleAction(
   }
 }
 
-async function handleStatus(res: ServerResponse, service: AgentService): Promise<void> {
+async function handleStatus(res: ServerResponse, service: ServedAgent): Promise<void> {
   try {
     sendJson(res, 200, await service.getStatus())
   } catch {
