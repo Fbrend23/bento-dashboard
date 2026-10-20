@@ -189,9 +189,9 @@ async function submit(): Promise<void> {
           </label>
           <small v-if="errors.logContainers" class="error">{{ errors.logContainers }}</small>
           <small v-else class="hint">
-            Chaque conteneur coché demande sa propre règle sur bento :
-            <code>bento-dash ALL=(root) NOPASSWD: /usr/bin/docker logs --tail 200 nom</code>. Sans
-            elle, bento refuse et l'écran des journaux l'indique.
+            La lecture passe par le script <code>bento-docker-logs</code> installé sur bento (une
+            seule règle sudoers pour tous les conteneurs). Sans lui, bento refuse et l'écran des
+            journaux l'indique.
           </small>
         </fieldset>
       </section>

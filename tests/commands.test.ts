@@ -5,6 +5,7 @@ import { CONTAINER_ACTIONS } from '@shared/actions'
 import {
   ALLOWED_COMMANDS,
   CONTAINER_ACTION_SCRIPT,
+  CONTAINER_LOGS_SCRIPT,
   containerActionCommand,
   containerLogCommand,
   HISTORY_COMMAND,
@@ -170,12 +171,13 @@ describe('known commands', () => {
 })
 
 describe('containerLogCommand', () => {
-  it('reads 200 lines through sudo -n, with stderr merged', () => {
+  it('goes through the validating script with sudo -n, with stderr merged', () => {
+    expect(CONTAINER_LOGS_SCRIPT).toBe('/usr/local/bin/bento-docker-logs')
     expect(containerLogCommand('jellyfin')).toBe(
-      'timeout 10 sudo -n docker logs --tail 200 jellyfin 2>&1'
+      'timeout 10 sudo -n /usr/local/bin/bento-docker-logs jellyfin 2>&1'
     )
     expect(containerLogCommand('proxy-app-1')).toBe(
-      'timeout 10 sudo -n docker logs --tail 200 proxy-app-1 2>&1'
+      'timeout 10 sudo -n /usr/local/bin/bento-docker-logs proxy-app-1 2>&1'
     )
   })
 
@@ -241,11 +243,12 @@ reboot`,
       `${ok} extra`,
       `${ok}$(id)`,
       ok.replace(' 2>&1', ''),
-      ok.replace('--tail 200', '--tail 201'),
-      ok.replace('--tail 200', '--follow'),
-      ok.replace('--tail 200', '--tail 200 --details'),
-      ok.replace('docker logs', 'docker rm'),
-      ok.replace('docker logs', 'docker exec'),
+      ok.replace('jellyfin', '--follow jellyfin'),
+      ok.replace('jellyfin', 'jellyfin --details'),
+      ok.replace('jellyfin', 'jellyfin series'),
+      ok.replace(CONTAINER_LOGS_SCRIPT, '/usr/bin/docker logs --tail 200'),
+      ok.replace(CONTAINER_LOGS_SCRIPT, CONTAINER_ACTION_SCRIPT),
+      ok.replace(CONTAINER_LOGS_SCRIPT, '/usr/local/bin/other-script'),
       ok.replace('jellyfin', '-f'),
       ok.replace('jellyfin', '--help'),
       ok.replace('jellyfin', 'a b'),
@@ -273,16 +276,11 @@ describe('README sudoers lines', () => {
     expect(lines).toHaveLength(CONTAINER_ACTIONS.length)
   })
 
-  it('only offer exact "docker logs" rules, one container each, with no wildcard', () => {
-    const rules = readme
-      .split(/\r?\n/)
-      .filter((l) => l.startsWith('bento-dash ALL=') && l.includes('docker logs'))
-    expect(rules.length).toBeGreaterThan(0)
-    for (const rule of rules) {
-      expect(rule).toMatch(
-        /^bento-dash ALL=\(root\) NOPASSWD: \/usr\/bin\/docker logs --tail 200 [A-Za-z0-9][A-Za-z0-9_.-]*$/
-      )
-    }
+  it('give bento-dash one line for the logs script, and no plain "docker logs" rule', () => {
+    const lines = readme.split(/\r?\n/).filter((l) => l.startsWith('bento-dash ALL='))
+    expect(lines).toContain(`bento-dash ALL=(root) NOPASSWD: ${CONTAINER_LOGS_SCRIPT} *`)
+    expect(lines.filter((l) => l.includes(CONTAINER_LOGS_SCRIPT))).toHaveLength(1)
+    expect(lines.some((l) => l.includes('docker logs'))).toBe(false)
   })
 
   it('no longer offer a plain "docker restart" rule as part of the setup', () => {

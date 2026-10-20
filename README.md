@@ -64,7 +64,7 @@ la seule frontière (voir plus bas). `sudo visudo -f /etc/sudoers.d/bento-dash`,
 
 ```
 bento-dash ALL=(root) NOPASSWD: /usr/bin/docker ps -a --format {{.Names}}|{{.State}}|{{.Ports}}|{{.Label\ "com.docker.compose.project"}}|{{.Status}}
-bento-dash ALL=(root) NOPASSWD: /usr/bin/docker logs --tail 200 jellyfin
+bento-dash ALL=(root) NOPASSWD: /usr/local/bin/bento-docker-logs *
 bento-dash ALL=(root) NOPASSWD: /usr/bin/journalctl -u tailscaled -n 200 --no-pager -o short-iso
 bento-dash ALL=(root) NOPASSWD: /usr/local/bin/bento-docker-action start *
 bento-dash ALL=(root) NOPASSWD: /usr/local/bin/bento-docker-action stop *
@@ -77,12 +77,12 @@ car `visudo -cf` ne vérifie que la syntaxe :
 `sudo -u bento-dash sudo -n docker ps -a --format '{{.Names}}|{{.State}}|{{.Ports}}|{{.Label "com.docker.compose.project"}}|{{.Status}}'`
 ne doit pas demander de mot de passe.
 
-**Journaux d'un conteneur.** Une ligne `docker logs --tail 200 <nom>` par conteneur, **sans joker**
-(l'exemple ci-dessus donne Jellyfin). Pour en ajouter un : cocher le conteneur dans **Réglages,
-Conteneurs, Conteneurs dont on lit les journaux**, puis ajouter sa ligne sudoers sur bento. L'app
-ne lit que les conteneurs cochés *et* présents dans le dernier relevé ; sans la règle sudoers,
-bento refuse et l'écran des journaux affiche « Ce conteneur n'a pas de règle sudoers ». La règle
-reste la vraie barrière : cocher un conteneur ne donne aucun droit à lui seul.
+**Journaux d'un conteneur.** Une seule ligne sudoers, vers le script `bento-docker-logs` (voir
+plus bas), quel que soit le nombre de conteneurs. Pour en lire un : cocher le conteneur dans
+**Réglages, Conteneurs, Conteneurs dont on lit les journaux**, rien à ajouter sur bento. L'app ne
+lit que les conteneurs cochés *et* présents dans le dernier relevé ; le script, lui, accepte tout
+conteneur existant (décision du 2026-10-20, lecture seule, 200 lignes). Sans le script ou sa
+ligne, l'écran des journaux affiche « Règle sudoers manquante pour bento-dash ».
 
 #### Script des actions sur les conteneurs
 
@@ -117,6 +117,35 @@ t $A restart '$(id)'             # 64
 t $A restart nope                # 65
 t $A restart JELLYFIN            # 65
 t $A restart <un conteneur sans importance>   # 0 : le seul cas qui agit
+```
+
+#### Script des journaux des conteneurs
+
+`scripts/bento-docker-logs.sh` affiche les 200 dernières lignes d'**un** conteneur existant. La
+ligne sudoers laisse le nom libre (`*`) : le script valide tout avant d'appeler docker (un seul
+argument, nom de la forme `[A-Za-z0-9][A-Za-z0-9_.-]{0,127}`, présent à l'identique dans
+`docker ps -a`). Mêmes codes de sortie que le script des actions : 64, 65, 66.
+
+```bash
+scp scripts/bento-docker-logs.sh <utilisateur>@bento:/tmp/
+# puis sur bento :
+sudo install -o root -g root -m 0755 /tmp/bento-docker-logs.sh /usr/local/bin/bento-docker-logs
+head -1 /usr/local/bin/bento-docker-logs | cat -A              # doit afficher exactement : #!/bin/bash$
+```
+
+Puis remplacer dans `/etc/sudoers.d/bento-dash` les anciennes lignes `docker logs --tail 200 <nom>`
+par la ligne du script, et vérifier avec `sudo visudo -cf /etc/sudoers.d/bento-dash`. Tester **en
+tant que `bento-dash`** :
+
+```bash
+L=/usr/local/bin/bento-docker-logs
+t() { sudo -u bento-dash sudo -n "$@" >/dev/null 2>&1; echo "code=$?  <- $*"; }
+t $L                             # 64
+t $L jellyfin extra              # 64
+t $L --follow                    # 64
+t $L 'jellyfin;id'               # 64
+t $L nope                        # 65
+t $L <un conteneur existant>     # 0 : le seul cas qui lit
 ```
 
 ### 3. Empreinte du serveur
@@ -329,7 +358,8 @@ Résumé des protections en place.
   script validé sur bento ; arrêter et redémarrer demandent une confirmation native du processus
   principal.
 - Les journaux d'un conteneur ne se lisent que s'il est choisi dans les réglages, présent dans le
-  dernier relevé, et couvert par sa propre règle sudoers sur bento.
+  dernier relevé ; le script `bento-docker-logs` sur bento revalide le nom et ne lit que les 200
+  dernières lignes.
 - Agent mobile : il n'écoute que sur `127.0.0.1` et chaque requête doit porter l'identité Tailscale
   autorisée (`allowedLogin`), sinon 403. Une action n'est acceptée que depuis sa propre page (pas de
   CORS, JSON seulement, en-tête `X-Bento-Agent`, `Origin` et `Sec-Fetch-Site` vérifiés), avec un
@@ -345,7 +375,7 @@ Résumé des protections en place.
 | Connexion refusée dès le départ | L'empreinte enregistrée ne correspond pas : la recopier depuis bento |
 | Hors ligne en permanence | Tailscale actif sur les deux machines ? Clé ajoutée à l'agent Windows (`ssh-add -l`) ? |
 | « GitHub refuse la vérification » | Trop de requêtes depuis cette adresse : réessayer plus tard |
-| « Ce conteneur n'a pas de règle sudoers » | Ajouter sa ligne `docker logs --tail 200 <nom>` (voir plus haut) |
+| Journaux d'un conteneur : « Règle sudoers manquante » ou « Conteneur introuvable » | Installer `bento-docker-logs` et sa ligne sudoers (voir plus haut) ; vérifier que le nom réglé est celui de `docker ps -a` |
 | Pas de mise à jour en `npm run dev` | Normal : elles n'existent que dans l'application installée |
 | `bento-agent` échoue avec `status=203/EXEC` | systemd ne trouve pas ou ne peut pas lancer Node : vérifier le chemin dans `ExecStart` et que `sudo -u bento-dash <chemin> --version` répond (un Node sous `/home` ou nvm ne convient pas) |
 | Téléphone : « Accès refusé » ou « Ce téléphone n'est pas autorisé » | `allowedLogin` ne correspond pas à l'identifiant exact vu par Tailscale : le lire avec `tailscale whois <adresse 100.x du téléphone>` (ligne `User:`), majuscules comprises |

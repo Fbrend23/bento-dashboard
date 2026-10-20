@@ -10,8 +10,7 @@ import { SNAPSHOT_COMMAND } from '../monitors/snapshot'
 // Every command ever sent to bento lives here. The fixed ones are exact strings; the container
 // actions and the container logs are the two families built from a name. A name is validated
 // several times (settings, service, builder below, allow-list pattern) and bento has the last
-// word: a container action goes through a validating script, a container's logs need that
-// container's own exact sudoers rule.
+// word: a container action and a container's logs each go through their own validating script.
 
 /** Remote limit of an action, so a stuck docker cannot hold the connection forever. */
 export const CONTAINER_ACTION_TIMEOUT_S = 90
@@ -45,14 +44,21 @@ export function isContainerActionCommand(command: string): boolean {
 export const TAILSCALED_LOG_COMMAND =
   'timeout 10 sudo -n journalctl -u tailscaled -n 200 --no-pager -o short-iso'
 
+/**
+ * Installed on bento by the README (root:root 0755) and allowed to bento-dash by one sudoers line.
+ * It validates the container name, then prints its last 200 log lines; nothing else.
+ */
+export const CONTAINER_LOGS_SCRIPT = '/usr/local/bin/bento-docker-logs'
+
 /** 200 last lines of a container; `2>&1` so docker's stderr (where most apps log) is captured. */
 export function containerLogCommand(name: string): string | null {
-  return isContainerName(name) ? `timeout 10 sudo -n docker logs --tail 200 ${name} 2>&1` : null
+  return isContainerName(name) ? `timeout 10 sudo -n ${CONTAINER_LOGS_SCRIPT} ${name} 2>&1` : null
 }
 
 // One anchored pattern: exactly the output of containerLogCommand, nothing before or after.
 const CONTAINER_LOG_COMMAND = new RegExp(
-  `^timeout 10 sudo -n docker logs --tail 200 ${CONTAINER_NAME.source.slice(1, -1)} 2>&1$`
+  `^timeout 10 sudo -n ${escapeRegExp(CONTAINER_LOGS_SCRIPT)} ` +
+    `${CONTAINER_NAME.source.slice(1, -1)} 2>&1$`
 )
 
 /** `null` when the source is a container with a malformed name. */
