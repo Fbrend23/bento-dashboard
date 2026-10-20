@@ -498,8 +498,18 @@ button {
   }
 }
 
-/* The page scrolls vertically by itself; sideways movements are ours (swipes between tabs). */
+/*
+ * The page scrolls vertically by itself; sideways movements are ours (swipes between tabs). The
+ * sliding panel travels past the screen edge for a moment: clipped, it never widens the page, so
+ * the fixed bar stays where it is.
+ */
+html,
+body {
+  overflow-x: clip;
+  overscroll-behavior-x: none;
+}
 .page {
+  overflow-x: clip;
   touch-action: pan-y;
 }
 
