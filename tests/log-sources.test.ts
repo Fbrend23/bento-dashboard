@@ -3,6 +3,7 @@ import {
   TAILSCALED_SOURCE,
   containerSource,
   groupLogSources,
+  type LogSource,
   logSourceFileName,
   logSources,
   parseLogSource
@@ -99,7 +100,8 @@ describe('groupLogSources', () => {
     project,
     ports: []
   })
-  const sources = (names: string[]) => logSources({ logContainers: names, containerLabels: {} })
+  const sources = (names: string[]): LogSource[] =>
+    logSources({ logContainers: names, containerLabels: {} })
 
   it('groups containers by stack, sorted by label, with Tailscale alone at the end', () => {
     const groups = groupLogSources(
