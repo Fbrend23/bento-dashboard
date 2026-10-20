@@ -9,9 +9,11 @@ const RETRY_CAP_MS = 10_000
 
 export interface DiscordPayload {
   username: string
+  /** The ping of the configured user, on a problem only. */
+  content?: string
   embeds: { title: string; description: string; color: number }[]
-  /** Empty on purpose: a container name must never be able to ping anyone. */
-  allowed_mentions: { parse: never[] }
+  /** Nobody can be pinged but the configured user: a container name never pings anyone. */
+  allowed_mentions: { parse: never[]; users?: string[] }
 }
 
 const escapeMarkdown = (text: string): string => text.replace(/([\\*_`~|>])/g, '\\$1')
@@ -19,9 +21,14 @@ const escapeMarkdown = (text: string): string => text.replace(/([\\*_`~|>])/g, '
 const truncate = (text: string, max: number): string =>
   text.length <= max ? text : `${text.slice(0, max - 1)}…`
 
-export function toDiscordPayload(notification: AppNotification): DiscordPayload {
+export function toDiscordPayload(
+  notification: AppNotification,
+  mentionUserId?: string
+): DiscordPayload {
+  const ping = mentionUserId !== undefined && !notification.id.startsWith('up:')
   return {
     username: 'bento',
+    ...(ping ? { content: `<@${mentionUserId}>` } : {}),
     embeds: [
       {
         title: truncate(escapeMarkdown(notification.title), TITLE_MAX),
@@ -29,7 +36,7 @@ export function toDiscordPayload(notification: AppNotification): DiscordPayload 
         color: notification.id.startsWith('up:') ? GREEN : RED
       }
     ],
-    allowed_mentions: { parse: [] }
+    allowed_mentions: ping ? { parse: [], users: [mentionUserId] } : { parse: [] }
   }
 }
 
@@ -41,6 +48,8 @@ export interface DiscordSender {
 export interface DiscordSenderDeps {
   /** The webhook url is a secret: it is used for the request and appears nowhere else. */
   url: string
+  /** Numeric id of the user to ping on a problem. */
+  mentionUserId?: string
   fetch?: typeof fetch
   log?: (line: string) => void
   sleep?: (ms: number) => Promise<void>
@@ -73,7 +82,7 @@ export function createDiscordSender(deps: DiscordSenderDeps): DiscordSender {
     })
 
   async function deliver(notification: AppNotification): Promise<void> {
-    const payload = toDiscordPayload(notification)
+    const payload = toDiscordPayload(notification, deps.mentionUserId)
     try {
       let response = await post(payload)
       if (response.status === 429) {

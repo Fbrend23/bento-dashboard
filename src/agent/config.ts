@@ -16,6 +16,8 @@ export interface AgentConfig {
   diskThresholdPercent: number
   /** Where the agent announces a container or tailscaled going down; none means no notification. */
   discordWebhookUrl: string | undefined
+  /** Discord user (numeric id) pinged when something goes down; nobody when absent. */
+  discordMentionUserId: string | undefined
 }
 
 export const DEFAULT_PORT = 8484
@@ -85,6 +87,14 @@ function discordWebhook(raw: unknown): string | undefined {
   return raw
 }
 
+function discordUserId(raw: unknown): string | undefined {
+  if (raw === undefined) return undefined
+  if (typeof raw !== 'string' || !/^\d{17,20}$/.test(raw)) {
+    throw new AgentConfigError('discordMentionUserId must be a numeric Discord user id')
+  }
+  return raw
+}
+
 /** Validates the config text. Anything wrong stops the agent: it must never run half-configured. */
 export function parseAgentConfig(text: string): AgentConfig {
   let raw: unknown
@@ -105,6 +115,7 @@ export function parseAgentConfig(text: string): AgentConfig {
     stackLabels: labels(raw.stackLabels, 'stackLabels'),
     hiddenContainers: hidden(raw.hiddenContainers),
     diskThresholdPercent: diskThreshold(raw.diskThresholdPercent),
-    discordWebhookUrl: discordWebhook(raw.discordWebhookUrl)
+    discordWebhookUrl: discordWebhook(raw.discordWebhookUrl),
+    discordMentionUserId: discordUserId(raw.discordMentionUserId)
   }
 }

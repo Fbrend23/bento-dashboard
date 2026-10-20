@@ -25,6 +25,20 @@ describe('toDiscordPayload', () => {
     expect(payload.allowed_mentions).toEqual({ parse: [] })
   })
 
+  it('mentions the configured user on a problem only, and nobody else', () => {
+    const id = '123456789012345678'
+    const red = toDiscordPayload(down, id)
+    expect(red.content).toBe(`<@${id}>`)
+    expect(red.allowed_mentions).toEqual({ parse: [], users: [id] })
+    const green = toDiscordPayload(up, id)
+    expect(green.content).toBeUndefined()
+    expect(green.allowed_mentions).toEqual({ parse: [] })
+  })
+
+  it('does not mention anyone without a configured user', () => {
+    expect(toDiscordPayload(down).content).toBeUndefined()
+  })
+
   it('escapes Markdown and truncates long text', () => {
     const payload = toDiscordPayload({
       id: 'down:x',
@@ -49,6 +63,19 @@ describe('createDiscordSender', () => {
     expect(init.headers).toMatchObject({ 'Content-Type': 'application/json' })
     expect(init.signal).toBeInstanceOf(AbortSignal)
     expect(JSON.parse(init.body as string)).toMatchObject({ username: 'bento' })
+  })
+
+  it('sends the mention of the configured user', async () => {
+    const fetch = vi.fn().mockResolvedValue(ok())
+    const sender = createDiscordSender({
+      url: URL,
+      mentionUserId: '123456789012345678',
+      fetch,
+      log: vi.fn()
+    })
+    await sender.send(down)
+    const body = JSON.parse((fetch.mock.calls[0] as [string, RequestInit])[1].body as string)
+    expect(body).toMatchObject({ content: '<@123456789012345678>' })
   })
 
   it('sends messages one after the other, in order', async () => {

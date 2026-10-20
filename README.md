@@ -306,6 +306,7 @@ est demandé dans le terminal si besoin). La première installation reste celle 
 | `hiddenContainers` | Conteneurs à ne pas afficher. |
 | `diskThresholdPercent` | Seuil d'un disque plein pour les incidents de l'historique, entre 1 et 100 (85 par défaut, comme dans Réglages). |
 | `discordWebhookUrl` | Facultatif. Adresse d'un webhook Discord : l'agent y envoie « conteneur tombé » et « de nouveau actif » (conteneurs et Tailscale), même quand ni le logiciel ni la page ne sont ouverts. Absent = aucune notification. |
+| `discordMentionUserId` | Facultatif. Ton identifiant Discord numérique (pas le pseudo) : l'agent te mentionne (`@`) quand quelque chose tombe, pas au retour. |
 
 L'unité systemd n'active **pas** `NoNewPrivileges` : toutes les commandes passent par `sudo -n`, qui
 cesserait de fonctionner sans message clair.
@@ -320,7 +321,8 @@ L'agent tourne en continu sur bento : c'est lui qui prévient, sans dépendre du
 1. Dans Discord : salon → Modifier le salon → Intégrations → Webhooks → Nouveau webhook → Copier l'URL.
 2. Sur bento, ajouter `"discordWebhookUrl": "<l'URL>"` à `/etc/bento-agent/config.json`, qui contient
    maintenant un secret : `sudo chown root:bento-dash /etc/bento-agent/config.json && sudo chmod 640 /etc/bento-agent/config.json`.
-3. `sudo systemctl restart bento-agent` (ou `npm run deploy:agent`).
+3. Pour être mentionné : Discord → Paramètres → Avancés → activer le mode développeur, puis clic droit sur ton profil → « Copier l'identifiant de l'utilisateur », et ajouter `"discordMentionUserId": "<l'identifiant>"` (un pseudo comme `@yochy23` ne peut pas être résolu par un webhook).
+4. `sudo systemctl restart bento-agent` (ou `npm run deploy:agent`).
 
 Un message rouge part quand un conteneur vu actif s'arrête (ou que `tailscaled` tombe), un vert quand
 il repart. Un arrêt ou un redémarrage lancé depuis la page est retenu. Un conteneur arrêté à la main

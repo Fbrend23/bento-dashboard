@@ -13,8 +13,29 @@ describe('parseAgentConfig', () => {
       stackLabels: {},
       hiddenContainers: [],
       diskThresholdPercent: 85,
-      discordWebhookUrl: undefined
+      discordWebhookUrl: undefined,
+      discordMentionUserId: undefined
     })
+  })
+
+  it('reads the Discord user to mention, and refuses anything but a numeric id', () => {
+    expect(
+      parseAgentConfig(JSON.stringify({ ...minimal, discordMentionUserId: '123456789012345678' }))
+        .discordMentionUserId
+    ).toBe('123456789012345678')
+    for (const discordMentionUserId of [
+      '',
+      '@yochy23',
+      'yochy23',
+      '<@123456789012345678>',
+      '123',
+      Number('123456789012345678'),
+      null
+    ]) {
+      expect(() => parseAgentConfig(JSON.stringify({ ...minimal, discordMentionUserId }))).toThrow(
+        AgentConfigError
+      )
+    }
   })
 
   it('reads a Discord webhook url', () => {

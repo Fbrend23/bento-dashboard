@@ -34,7 +34,11 @@ async function main(): Promise<void> {
   // Without a webhook there is no notification at all.
   const alerts = config.discordWebhookUrl ? createAlerts() : null
   const sender = config.discordWebhookUrl
-    ? createDiscordSender({ url: config.discordWebhookUrl, log: (line) => console.warn(line) })
+    ? createDiscordSender({
+        url: config.discordWebhookUrl,
+        mentionUserId: config.discordMentionUserId,
+        log: (line) => console.warn(line)
+      })
     : null
   const feedHistory = createHistoryFeed(history)
   const session = createLocalSession()

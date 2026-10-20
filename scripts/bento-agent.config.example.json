@@ -6,5 +6,6 @@
   "stackLabels": { "media": "Médias" },
   "hiddenContainers": [],
   "diskThresholdPercent": 85,
-  "discordWebhookUrl": "https://discord.com/api/webhooks/123456789012345678/remplace-par-ton-jeton"
+  "discordWebhookUrl": "https://discord.com/api/webhooks/123456789012345678/remplace-par-ton-jeton",
+  "discordMentionUserId": "123456789012345678"
 }
