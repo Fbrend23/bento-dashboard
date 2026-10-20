@@ -26,7 +26,7 @@ serveur toutes les 30 secondes et reste dans la barre système.
 | F6 | Démarrer, arrêter ou redémarrer un conteneur, avec confirmation pour arrêter et redémarrer |
 | F7 | 200 dernières lignes de logs des conteneurs choisis dans les réglages et de Tailscale |
 | F8 | Réglages : hôte, empreinte du serveur, intervalle, seuils, lancement au démarrage |
-| F9 | Sur téléphone (facultatif) : état des conteneurs par stack, démarrer, arrêter ou redémarrer, depuis une page installable (voir « Version mobile ») |
+| F9 | Sur téléphone (facultatif) : état des conteneurs par stack, démarrer, arrêter ou redémarrer, depuis une page installable (voir « Agent sur bento ») |
 
 Hors périmètre : terminal intégré, administration complète, accès hors Tailscale, plusieurs serveurs.
 
@@ -175,10 +175,17 @@ tentent de créer la release, ce qui échoue (`already_exists`) une fois sur deu
 
 `npm run build:win` construit l'installeur dans `dist/` sans rien publier.
 
-## Version mobile (facultatif)
+## Agent sur bento : historique et version mobile
 
-Pour vérifier bento et redémarrer un conteneur depuis un téléphone, un petit agent tourne **sur
-bento** et sert une page web installable (PWA). Il n'écoute que sur `127.0.0.1` : seul
+L'agent est **facultatif**, mais sans lui l'écran Historique reste vide : l'application de bureau
+n'est pas ouverte en permanence, c'est donc l'agent qui relève bento toutes les 30 secondes et
+garde l'historique (une valeur par minute et les incidents, sur 7 jours) dans
+`/var/lib/bento-agent/history.json`. Le bureau le lit à la demande, avec une commande figée sans
+`sudo`. Un arrêt de l'agent ou de bento apparaît comme un incident « injoignable » une fois
+l'agent reparti, et comme un trou dans les courbes. Le téléphone n'affiche pas l'historique.
+
+Pour vérifier bento et redémarrer un conteneur depuis un téléphone, le même agent sert une page web
+installable (PWA). Il n'écoute que sur `127.0.0.1` : seul
 `tailscale serve` l'expose, sur le tailnet, en HTTPS. Rien n'est stocké sur le téléphone, aucune clé.
 
 L'agent exécute localement les mêmes commandes que l'application de bureau, avec la même liste
@@ -225,7 +232,17 @@ Cette copie ne suit pas les mises à jour de nvm : à refaire quand tu changes d
 
 ### Mettre à jour l'agent
 
-Une fois l'agent installé, depuis le poste de développement :
+**Première mise à jour qui apporte l'historique** : l'unité installée doit recevoir deux lignes
+(le script ci-dessous ne la réinstalle pas). À faire sur bento, de préférence avant le déploiement ;
+sans elles l'agent fonctionne mais ne peut pas écrire l'historique.
+
+```bash
+sudo sed -i '/^Environment=BENTO_AGENT_STATIC/a StateDirectory=bento-agent\nEnvironment=BENTO_AGENT_HISTORY=/var/lib/bento-agent/history.json' /etc/systemd/system/bento-agent.service
+sudo systemctl daemon-reload && sudo systemctl restart bento-agent
+ls -ld /var/lib/bento-agent                       # propriétaire : bento-dash
+```
+
+Ensuite, depuis le poste de développement :
 
 ```bash
 npm run deploy:agent                  # hôte ssh « bento » par défaut
@@ -248,6 +265,7 @@ est demandé dans le terminal si besoin). La première installation reste celle 
 | `port` | Port local, 8484 par défaut. Doit être le même que dans la commande `tailscale serve`. |
 | `containerLabels`, `stackLabels` | Noms affichés, comme dans Réglages, Conteneurs. |
 | `hiddenContainers` | Conteneurs à ne pas afficher. |
+| `diskThresholdPercent` | Seuil d'un disque plein pour les incidents de l'historique, entre 1 et 100 (85 par défaut, comme dans Réglages). |
 
 L'unité systemd n'active **pas** `NoNewPrivileges` : toutes les commandes passent par `sudo -n`, qui
 cesserait de fonctionner sans message clair.
@@ -258,8 +276,9 @@ d'administration, DNS). Sans HTTPS, la page s'affiche mais ne peut pas s'install
 ### Sur le téléphone
 
 Avec l'application Tailscale connectée, ouvrir `https://bento.<ton-tailnet>.ts.net/` dans Chrome,
-puis menu ⋮ → « Ajouter à l'écran d'accueil ». La page lit bento quand elle est ouverte (toutes les
-30 secondes) et ne lit rien quand elle est en arrière-plan.
+puis menu ⋮ → « Ajouter à l'écran d'accueil ». La page demande l'état à l'agent quand elle est
+ouverte (toutes les 30 secondes) et ne demande rien quand elle est en arrière-plan ; l'agent, lui,
+relève bento en continu pour l'historique.
 
 Arrêter et redémarrer demandent une confirmation dans la page ; démarrer non, comme sur le bureau.
 Un arrêt ou un redémarrage lancé depuis le téléphone fait aussi apparaître la notification « service
@@ -293,7 +312,7 @@ src/
 │   └── …
 ├── preload/       contextBridge : window.bento, API minimale et typée
 ├── renderer/      Vue 3 + Pinia, aucune API Node
-├── agent/         agent de bento (version mobile) : session locale, serveur HTTP, authentification
+├── agent/         agent de bento (historique et version mobile) : relevé continu, session locale, serveur HTTP, authentification
 ├── mobile/        page du téléphone, Vue 3
 └── shared/        types et fonctions pures partagés
 ```
