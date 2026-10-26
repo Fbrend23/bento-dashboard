@@ -1,0 +1,6 @@
+{
+  "eventType": "Download",
+  "isUpgrade": false,
+  "movie": { "id": 7, "title": "Dune: Part Two", "year": 2024 },
+  "movieFile": { "quality": "Bluray-1080p" }
+}

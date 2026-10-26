@@ -82,13 +82,35 @@ describe('createAlerts', () => {
     expect(out.map((n) => n.id)).toEqual(['down:tailscaled.service'])
   })
 
-  it('ignores disks, health, cpu, memory and load', () => {
+  it('ignores cpu, memory and load, however long they stay high', () => {
     const alerts = createAlerts({ now: () => 0 })
-    const ok = [service('jellyfin', 'ok')]
-    alerts.update(status(ok))
+    alerts.update(status([service('jellyfin', 'ok')]))
     for (let i = 0; i < 10; i++) {
-      expect(alerts.update(status([service('jellyfin', 'degraded')], true))).toEqual([])
+      expect(alerts.update(status([service('jellyfin', 'ok')]))).toEqual([])
     }
+  })
+
+  it('announces a disk over its threshold once, and its return', () => {
+    const alerts = createAlerts({ now: () => 0 })
+    alerts.update(status([service('jellyfin', 'ok')]))
+    expect(alerts.update(status([service('jellyfin', 'ok')], true)).map((n) => n.id)).toEqual([
+      'disk:/'
+    ])
+    expect(alerts.update(status([service('jellyfin', 'ok')], true))).toEqual([])
+    expect(alerts.update(status([service('jellyfin', 'ok')])).map((n) => n.id)).toEqual([
+      'disk-ok:/'
+    ])
+  })
+
+  it('announces a container turning unhealthy, and its return', () => {
+    const alerts = createAlerts({ now: () => 0 })
+    const unhealthy = { ...service('radarr', 'degraded'), detail: 'Up 2 hours (unhealthy)' }
+    alerts.update(status([service('radarr', 'ok')]))
+    expect(alerts.update(status([unhealthy])).map((n) => n.id)).toEqual(['unhealthy:radarr'])
+    expect(alerts.update(status([unhealthy]))).toEqual([])
+    expect(alerts.update(status([service('radarr', 'ok')])).map((n) => n.id)).toEqual([
+      'healthy:radarr'
+    ])
   })
 
   it('holds back the down message of a container the user stops or restarts', () => {

@@ -18,6 +18,16 @@ export interface AgentConfig {
   discordWebhookUrl: string | undefined
   /** Discord user (numeric id) pinged when something goes down; nobody when absent. */
   discordMentionUserId: string | undefined
+  /** ntfy topic receiving the same notifications on the phone; none means no ntfy push. */
+  ntfyTopic: string | undefined
+  /** Base url of the ntfy server (https); the public ntfy.sh when absent. */
+  ntfyUrl: string | undefined
+  /** Access token when the ntfy topic is protected. */
+  ntfyToken: string | undefined
+  /** Where `listen` accepts the pushes of scripts and webhooks (`ip:port`); off when absent. */
+  notifyListen: string | undefined
+  /** Bearer token those pushes must present; required with `notifyListen`. */
+  notifyToken: string | undefined
 }
 
 export const DEFAULT_PORT = 8484
@@ -95,6 +105,59 @@ function discordUserId(raw: unknown): string | undefined {
   return raw
 }
 
+function ntfyTopic(raw: unknown): string | undefined {
+  if (raw === undefined) return undefined
+  // On the public server the topic is the only protection: long enough not to be guessed.
+  if (typeof raw !== 'string' || !/^[A-Za-z0-9_-]{16,64}$/.test(raw)) {
+    throw new AgentConfigError('ntfyTopic must be 16 to 64 letters, digits, "-" or "_"')
+  }
+  return raw
+}
+
+function ntfyUrl(raw: unknown): string | undefined {
+  if (raw === undefined) return undefined
+  if (typeof raw !== 'string' || !/^https:\/\/[^/\s?#]+$/.test(raw)) {
+    throw new AgentConfigError('ntfyUrl must look like https://host, with no path')
+  }
+  return raw
+}
+
+function ntfyToken(raw: unknown): string | undefined {
+  if (raw === undefined) return undefined
+  if (typeof raw !== 'string' || !/^[A-Za-z0-9_-]{8,128}$/.test(raw)) {
+    throw new AgentConfigError('ntfyToken must be a ntfy access token')
+  }
+  return raw
+}
+
+const PRIVATE_IPV4 =
+  /^(10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}|127\.\d{1,3}\.\d{1,3}\.\d{1,3})$/
+
+function notifyListen(raw: unknown): string | undefined {
+  if (raw === undefined) return undefined
+  const match = typeof raw === 'string' ? /^([0-9.]+):(\d{4,5})$/.exec(raw) : null
+  const octets = match ? match[1].split('.').map(Number) : []
+  if (
+    !match ||
+    !PRIVATE_IPV4.test(match[1]) ||
+    octets.some((octet) => octet > 255) ||
+    Number(match[2]) < 1024 ||
+    Number(match[2]) > 65535
+  ) {
+    // Never a public address: the entry carries no login, only the token.
+    throw new AgentConfigError('notifyListen must be a private IPv4 address and a port, as ip:port')
+  }
+  return raw as string
+}
+
+function notifyToken(raw: unknown): string | undefined {
+  if (raw === undefined) return undefined
+  if (typeof raw !== 'string' || !/^[A-Za-z0-9_-]{32,128}$/.test(raw)) {
+    throw new AgentConfigError('notifyToken must be 32 to 128 letters, digits, "-" or "_"')
+  }
+  return raw
+}
+
 /** Validates the config text. Anything wrong stops the agent: it must never run half-configured. */
 export function parseAgentConfig(text: string): AgentConfig {
   let raw: unknown
@@ -107,7 +170,7 @@ export function parseAgentConfig(text: string): AgentConfig {
   if (typeof raw.allowedLogin !== 'string' || raw.allowedLogin.trim() === '') {
     throw new AgentConfigError('allowedLogin is required')
   }
-  return {
+  const config: AgentConfig = {
     allowedLogin: raw.allowedLogin.trim(),
     allowedOrigin: origin(raw.allowedOrigin),
     port: port(raw.port),
@@ -116,6 +179,15 @@ export function parseAgentConfig(text: string): AgentConfig {
     hiddenContainers: hidden(raw.hiddenContainers),
     diskThresholdPercent: diskThreshold(raw.diskThresholdPercent),
     discordWebhookUrl: discordWebhook(raw.discordWebhookUrl),
-    discordMentionUserId: discordUserId(raw.discordMentionUserId)
+    discordMentionUserId: discordUserId(raw.discordMentionUserId),
+    ntfyTopic: ntfyTopic(raw.ntfyTopic),
+    ntfyUrl: ntfyUrl(raw.ntfyUrl),
+    ntfyToken: ntfyToken(raw.ntfyToken),
+    notifyListen: notifyListen(raw.notifyListen),
+    notifyToken: notifyToken(raw.notifyToken)
   }
+  if ((config.notifyListen === undefined) !== (config.notifyToken === undefined)) {
+    throw new AgentConfigError('notifyListen and notifyToken go together')
+  }
+  return config
 }

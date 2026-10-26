@@ -14,7 +14,92 @@ describe('parseAgentConfig', () => {
       hiddenContainers: [],
       diskThresholdPercent: 85,
       discordWebhookUrl: undefined,
-      discordMentionUserId: undefined
+      discordMentionUserId: undefined,
+      ntfyTopic: undefined,
+      ntfyUrl: undefined,
+      ntfyToken: undefined,
+      notifyListen: undefined,
+      notifyToken: undefined
+    })
+  })
+
+  it('reads the ntfy topic, and refuses one that could be guessed', () => {
+    const topic = 'homelab-3f9a1c7e5b2d40f6a8c1'
+    expect(parseAgentConfig(JSON.stringify({ ...minimal, ntfyTopic: topic })).ntfyTopic).toBe(topic)
+    for (const ntfyTopic of ['', 'homelab', 'has space in it 0123456789', 42, 'a'.repeat(65)]) {
+      expect(() => parseAgentConfig(JSON.stringify({ ...minimal, ntfyTopic }))).toThrow(
+        AgentConfigError
+      )
+    }
+  })
+
+  it('reads the ntfy server and token, and refuses a plain http server', () => {
+    const config = parseAgentConfig(
+      JSON.stringify({
+        ...minimal,
+        ntfyUrl: 'https://ntfy.example.com',
+        ntfyToken: 'tk_abcdefgh12'
+      })
+    )
+    expect(config.ntfyUrl).toBe('https://ntfy.example.com')
+    expect(config.ntfyToken).toBe('tk_abcdefgh12')
+    for (const ntfyUrl of [
+      'http://ntfy.example.com',
+      'https://ntfy.example.com/topic',
+      'ntfy.sh'
+    ]) {
+      expect(() => parseAgentConfig(JSON.stringify({ ...minimal, ntfyUrl }))).toThrow(
+        AgentConfigError
+      )
+    }
+  })
+
+  describe('the entry of scripts and webhooks', () => {
+    const token = 'a'.repeat(32)
+
+    it('needs an address and a token together', () => {
+      const config = parseAgentConfig(
+        JSON.stringify({ ...minimal, notifyListen: '172.17.0.1:8485', notifyToken: token })
+      )
+      expect(config.notifyListen).toBe('172.17.0.1:8485')
+      expect(config.notifyToken).toBe(token)
+      expect(() =>
+        parseAgentConfig(JSON.stringify({ ...minimal, notifyListen: '172.17.0.1:8485' }))
+      ).toThrow(AgentConfigError)
+      expect(() => parseAgentConfig(JSON.stringify({ ...minimal, notifyToken: token }))).toThrow(
+        AgentConfigError
+      )
+    })
+
+    it('refuses a public address, a missing port, a port below 1024 and a short token', () => {
+      for (const notifyListen of [
+        '8.8.8.8:8485',
+        '0.0.0.0:8485',
+        '172.17.0.1',
+        '172.17.0.1:80',
+        '172.17.0.999:8485',
+        '172.32.0.1:8485',
+        'localhost:8485'
+      ]) {
+        expect(() =>
+          parseAgentConfig(JSON.stringify({ ...minimal, notifyListen, notifyToken: token }))
+        ).toThrow(AgentConfigError)
+      }
+      expect(() =>
+        parseAgentConfig(
+          JSON.stringify({ ...minimal, notifyListen: '172.17.0.1:8485', notifyToken: 'short' })
+        )
+      ).toThrow(AgentConfigError)
+    })
+
+    it('never puts the token in the error', () => {
+      try {
+        parseAgentConfig(
+          JSON.stringify({ ...minimal, notifyListen: '8.8.8.8:8485', notifyToken: token })
+        )
+      } catch (error) {
+        expect(String(error)).not.toContain(token)
+      }
     })
   })
 

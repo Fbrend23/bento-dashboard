@@ -1,7 +1,9 @@
 import type { AppNotification } from '../main/notifications/tracker'
+import { notificationKind, type NotificationSender } from './notification'
 
 const RED = 0xe5484d
 const GREEN = 0x30a46c
+const BLUE = 0x3e63dd
 const TITLE_MAX = 256
 const DESCRIPTION_MAX = 2000
 const TIMEOUT_MS = 10_000
@@ -38,7 +40,8 @@ export function toDiscordPayload(
   mentionUserId?: string,
   at: number = Date.now()
 ): DiscordPayload {
-  const ping = mentionUserId !== undefined && !notification.id.startsWith('up:')
+  const kind = notificationKind(notification.id)
+  const ping = mentionUserId !== undefined && kind === 'problem'
   return {
     username: 'bento',
     ...(ping ? { content: `<@${mentionUserId}>` } : {}),
@@ -49,7 +52,7 @@ export function toDiscordPayload(
           withClockTime(escapeMarkdown(notification.body), at),
           DESCRIPTION_MAX
         ),
-        color: notification.id.startsWith('up:') ? GREEN : RED,
+        color: kind === 'recovery' ? GREEN : kind === 'info' ? BLUE : RED,
         timestamp: new Date(at).toISOString()
       }
     ],
@@ -57,10 +60,7 @@ export function toDiscordPayload(
   }
 }
 
-export interface DiscordSender {
-  /** Never rejects: a message that cannot be delivered is logged and dropped. */
-  send(notification: AppNotification): Promise<void>
-}
+export type DiscordSender = NotificationSender
 
 export interface DiscordSenderDeps {
   /** The webhook url is a secret: it is used for the request and appears nowhere else. */
