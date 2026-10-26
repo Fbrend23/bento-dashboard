@@ -7,5 +7,8 @@
   "hiddenContainers": [],
   "diskThresholdPercent": 85,
   "discordWebhookUrl": "https://discord.com/api/webhooks/123456789012345678/remplace-par-ton-jeton",
-  "discordMentionUserId": "123456789012345678"
+  "discordMentionUserId": "123456789012345678",
+  "ntfyTopic": "homelab-remplace-par-un-nom-long-et-aleatoire",
+  "notifyListen": "172.17.0.1:8485",
+  "notifyToken": "remplace-par-64-caracteres-hexadecimaux-aleatoires-xxxxxxxxxxxxxxxx"
 }

@@ -3,11 +3,12 @@ import { DEFAULT_SETTINGS, type Settings } from '@shared/settings'
 import { NotificationTracker, type AppNotification } from '../main/notifications/tracker'
 import { toBentoStatus } from './history'
 
-// Only the two things worth waking someone for: a container (or tailscaled) that goes down, and
-// its return. Disks, health, cpu, memory and load stay in the app and the history.
+// What is worth a push: a container (or tailscaled) that goes down, one that turns unhealthy, a
+// disk above its threshold, and the return of each. Cpu, memory and load stay in the app and the
+// history: a laptop that swaps would announce them all day.
 const SETTINGS: Settings = {
   ...DEFAULT_SETTINGS,
-  notifyUnhealthy: false,
+  notifyUnhealthy: true,
   notifyCpu: false,
   notifyMemory: false,
   notifyLoad: false,
@@ -15,7 +16,9 @@ const SETTINGS: Settings = {
   quietHoursEnabled: false
 }
 
-const isWanted = (n: AppNotification): boolean => n.id.startsWith('down:') || n.id.startsWith('up:')
+const WANTED_PREFIXES = ['down:', 'up:', 'unhealthy:', 'healthy:', 'disk:', 'disk-ok:']
+const isWanted = (n: AppNotification): boolean =>
+  WANTED_PREFIXES.some((prefix) => n.id.startsWith(prefix))
 
 export interface Alerts {
   /** What to announce after this reading. */

@@ -1,0 +1,9 @@
+{
+  "eventType": "Download",
+  "isUpgrade": false,
+  "series": { "id": 1, "title": "Severance", "year": 2022 },
+  "episodes": [
+    { "id": 11, "seasonNumber": 2, "episodeNumber": 3, "title": "Who Is Alive?" },
+    { "id": 12, "seasonNumber": 2, "episodeNumber": 4, "title": "Woe's Hollow" }
+  ]
+}

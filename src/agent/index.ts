@@ -8,6 +8,9 @@ import { AgentConfigError, parseAgentConfig } from './config'
 import { createDiscordSender } from './discord'
 import { createHistoryFeed } from './history'
 import { createLocalSession } from './local-session'
+import type { NotificationSender } from './notification'
+import { createNtfySender } from './ntfy'
+import { createNotifyServer, listenWithRetry } from './notify-server'
 import { createAgentServer } from './server'
 import { createAgentService } from './service'
 
@@ -31,15 +34,28 @@ async function main(): Promise<void> {
   const memory = await createFileRunningMemory(
     process.env.BENTO_AGENT_RUNNING ?? DEFAULT_RUNNING_PATH
   )
-  // Without a webhook there is no notification at all.
-  const alerts = config.discordWebhookUrl ? createAlerts() : null
-  const sender = config.discordWebhookUrl
-    ? createDiscordSender({
+  // Without a channel there is no notification at all.
+  const senders: NotificationSender[] = []
+  if (config.discordWebhookUrl) {
+    senders.push(
+      createDiscordSender({
         url: config.discordWebhookUrl,
         mentionUserId: config.discordMentionUserId,
         log: (line) => console.warn(line)
       })
-    : null
+    )
+  }
+  if (config.ntfyTopic) {
+    senders.push(
+      createNtfySender({
+        topic: config.ntfyTopic,
+        url: config.ntfyUrl,
+        token: config.ntfyToken,
+        log: (line) => console.warn(line)
+      })
+    )
+  }
+  const alerts = senders.length > 0 ? createAlerts() : null
   const feedHistory = createHistoryFeed(history)
   const session = createLocalSession()
   const service = createAgentService({
@@ -51,8 +67,11 @@ async function main(): Promise<void> {
     quiet: (container, durationMs) => alerts?.suppress(container, durationMs),
     onStatus: (status) => {
       feedHistory(status)
-      // The sender queues and swallows its own failures: it can neither block nor break a read.
-      if (alerts && sender) for (const message of alerts.update(status)) void sender.send(message)
+      // The senders queue and swallow their own failures: they can neither block nor break a read.
+      if (alerts) {
+        for (const message of alerts.update(status))
+          for (const sender of senders) void sender.send(message)
+      }
     }
   })
   const server = createAgentServer({
@@ -62,6 +81,23 @@ async function main(): Promise<void> {
     staticDir: process.env.BENTO_AGENT_STATIC ?? join(__dirname, 'public'),
     onRefused: (line) => console.warn(line)
   })
+
+  // Scripts and media apps push through their own server, on a private address, with a token.
+  const notifyServer =
+    config.notifyListen && config.notifyToken && senders.length > 0
+      ? createNotifyServer({
+          token: config.notifyToken,
+          send: (message) => {
+            for (const sender of senders) void sender.send(message)
+          },
+          log: (line) => console.warn(line)
+        })
+      : null
+  if (config.notifyListen && notifyServer) {
+    listenWithRetry(notifyServer, config.notifyListen, (line) => console.log(line))
+  } else if (config.notifyListen) {
+    console.warn('notify: notifyListen is set but no channel (discord, ntfy) is configured')
+  }
 
   server.listen(config.port, LOOPBACK, () => {
     console.log(`bento-agent listening on ${LOOPBACK}:${config.port}`)
@@ -74,6 +110,7 @@ async function main(): Promise<void> {
     // may be killed a few seconds later.
     history.flushSync()
     void memory.flush()
+    notifyServer?.close()
     server.close(() => process.exit(0))
     setTimeout(() => process.exit(0), 3000).unref()
   }

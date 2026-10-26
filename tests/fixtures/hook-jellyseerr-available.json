@@ -1,0 +1,8 @@
+{
+  "notification_type": "MEDIA_AVAILABLE",
+  "event": "Movie Request Now Available",
+  "subject": "Dune: Part Two (2024)",
+  "message": "Paul Atreides unites with the Fremen.",
+  "media": { "media_type": "movie", "tmdbId": "693134", "status": "AVAILABLE" },
+  "request": { "request_id": "12", "requestedBy_username": "Tessie" }
+}

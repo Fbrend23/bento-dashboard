@@ -306,6 +306,9 @@ est demandé dans le terminal si besoin). La première installation reste celle 
 | `hiddenContainers` | Conteneurs à ne pas afficher. |
 | `diskThresholdPercent` | Seuil d'un disque plein pour les incidents de l'historique, entre 1 et 100 (85 par défaut, comme dans Réglages). |
 | `discordWebhookUrl` | Facultatif. Adresse d'un webhook Discord : l'agent y envoie « conteneur tombé » et « de nouveau actif » (conteneurs et Tailscale), même quand ni le logiciel ni la page ne sont ouverts. Absent = aucune notification. |
+| `ntfyTopic` | Facultatif. Sujet [ntfy](https://ntfy.sh) : les mêmes notifications arrivent en push sur le téléphone (appli ntfy), même hors Tailscale. 16 à 64 caractères, **à choisir aléatoire** : sur le serveur public, le nom du sujet est la seule protection. |
+| `ntfyUrl`, `ntfyToken` | Facultatifs. Serveur ntfy auto-hébergé (`https://hôte`, ntfy.sh par défaut) et jeton d'accès d'un sujet protégé. |
+| `notifyListen`, `notifyToken` | Facultatifs, ensemble. Adresse privée `ip:port` où l'agent reçoit les envois des scripts et de Sonarr, Radarr, Jellyseerr, et le jeton qu'ils doivent présenter (`Authorization: Bearer`, 32 à 128 caractères). Une adresse publique est refusée. Il faut aussi un canal (Discord ou ntfy). |
 | `discordMentionUserId` | Facultatif. Ton identifiant Discord numérique (pas le pseudo) : l'agent te mentionne (`@`) quand quelque chose tombe, pas au retour. |
 
 L'unité systemd n'active **pas** `NoNewPrivileges` : toutes les commandes passent par `sudo -n`, qui
@@ -329,6 +332,39 @@ il repart. Un arrêt ou un redémarrage lancé depuis la page est retenu. Un con
 sur bento (`docker stop`) prévient aussi. L'URL ne s'écrit nulle part ailleurs (ni journaux, ni
 messages) ; si elle fuit, supprimer le webhook dans Discord. L'agent doit pouvoir joindre
 `discord.com` en HTTPS.
+
+### Notifications ntfy
+
+Même moteur que Discord (les deux peuvent être actifs ensemble), mais en push natif sur Android : le
+serveur ntfy relaie par FCM, sans connexion permanente ni Tailscale sur le téléphone.
+
+1. Générer un sujet et un jeton : `echo "homelab-$(openssl rand -hex 12)"` et `openssl rand -hex 32`.
+2. Dans l'appli ntfy du téléphone : s'abonner au sujet (serveur par défaut ntfy.sh).
+3. Ajouter `ntfyTopic` à `/etc/bento-agent/config.json` (fichier `root:bento-dash`, `640`), puis
+   `sudo systemctl restart bento-agent`.
+
+Partent en push : un conteneur tombé ou de nouveau actif, un conteneur dont le contrôle de santé échoue
+(ou qui repart), un disque au-dessus de `diskThresholdPercent` (ou revenu en dessous). Un problème
+est urgent, un retour discret. Le processeur, la mémoire et la charge ne notifient pas.
+
+**Scripts et applications.** Avec `notifyListen` (par exemple `172.17.0.1:8485`, la passerelle du pont
+Docker, joignable depuis l'hôte et les conteneurs, pas depuis le réseau local) et `notifyToken`, l'agent
+ouvre une seconde entrée, indépendante de celle de Tailscale. Toute requête a besoin de
+`Authorization: Bearer <notifyToken>` ; celles qui portent des en-têtes `Tailscale-*` sont refusées.
+
+| Route | Source |
+| --- | --- |
+| `POST /notify` | Un script : `{"title": "…", "body": "…", "priority": "low\|default\|high"}`. |
+| `POST /hooks/sonarr`, `/hooks/radarr` | Paramètres → Connexion → Webhook, événements « À l'importation » et « À la mise à niveau ». |
+| `POST /hooks/jellyseerr` | Paramètres → Notifications → Webhook, charge utile par défaut. |
+
+Le bouton « Test » de chaque application envoie « Test réussi ». Ces messages ne passent pas par
+l'historique.
+
+```sh
+curl -fsS -H "Authorization: Bearer $NOTIFY_TOKEN" -H 'Content-Type: application/json' \
+  -d '{"title":"❌ Sauvegarde ratée","body":"voir backup.log"}' http://172.17.0.1:8485/notify
+```
 
 ### Sur le téléphone
 

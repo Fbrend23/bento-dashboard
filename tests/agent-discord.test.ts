@@ -16,6 +16,20 @@ describe('toDiscordPayload', () => {
     expect(red.embeds[0].description).toBe('Exited (1).')
   })
 
+  it('treats the end of an unhealthy state or a full disk as a recovery, and a report as neither', () => {
+    const id = '123456789012345678'
+    const healthy = toDiscordPayload({ id: 'healthy:radarr', title: 't', body: 'b' }, id)
+    const diskOk = toDiscordPayload({ id: 'disk-ok:/', title: 't', body: 'b' }, id)
+    const report = toDiscordPayload({ id: 'info:radarr', title: 't', body: 'b' }, id)
+    const red = toDiscordPayload(down, id).embeds[0].color
+    const green = toDiscordPayload(up, id).embeds[0].color
+    expect(healthy.embeds[0].color).toBe(green)
+    expect(diskOk.embeds[0].color).toBe(green)
+    expect(report.embeds[0].color).not.toBe(red)
+    expect(report.embeds[0].color).not.toBe(green)
+    for (const payload of [healthy, diskOk, report]) expect(payload.content).toBeUndefined()
+  })
+
   it('never lets a message mention anyone', () => {
     const payload = toDiscordPayload({
       ...down,
